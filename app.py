@@ -5,7 +5,6 @@ from flask import (
     Flask, render_template_string, request, send_file, flash,
     send_from_directory, jsonify, redirect, url_for
 )
-from werkzeug.utils import secure_filename
 
 # ===================== 설정 (환경변수 우선) =====================
 SECRET_KEY = os.environ.get("SECRET_KEY", "change_me")
@@ -34,11 +33,17 @@ index_html = r'''
   <title>만화카페 도도 도서검색</title>
   <style>
     :root{
-      /* 큼직한 레이아웃 값 */
+      /* 레이아웃 기본값 */
       --gap: clamp(16px, 3vw, 40px);
       --pad: clamp(18px, 3.8vw, 52px);
       --radius: clamp(16px, 3.2vw, 44px);
-      --img-h: clamp(420px, 60vh, 720px); /* 이미지/기본 컨테이너 높이 기준 */
+
+      /* 페이지 상하 여백(컨테이너 높이 계산에 사용) */
+      --page-vmargin: clamp(12px, 4vh, 32px);
+
+      /* 기본 목표 높이(이미지/컨테이너의 바닥선 기준) */
+      --img-h: clamp(420px, 60vh, 720px);
+
       --h1: clamp(1.9rem, 3vw, 2.8rem);
       --text: clamp(1.06rem, 1.25vw, 1.22rem);
       --btn-fz: clamp(1.05rem, 1.3vw, 1.25rem);
@@ -56,17 +61,17 @@ index_html = r'''
     }
     .flex-wrap{
       display:flex; flex-wrap:wrap; justify-content:center; align-items:stretch;
-      max-width:1560px; margin:clamp(12px,4vh,32px) auto;
+      max-width:1560px; margin:var(--page-vmargin) auto;
       gap:var(--gap);
     }
+
+    /* 컨테이너/이미지 박스가 최소한 '뷰포트 높이'만큼 차지하도록 */
     .container{
       max-width:820px; flex:1 1 760px; min-width:360px;
       padding:var(--pad);
-      /* 검색 전에도 화면이 넉넉하도록 최소 높이 확보 */
-      min-height: var(--img-h);
-      /* 버튼을 더 아래로 내리기 위해 하단 패딩을 약간 추가 */
-      padding-bottom: calc(var(--pad) + 18px);
-
+      /* 최초 화면도 검색 후처럼 크게: 100vh - 상하 여백 * 2, 그리고 img-h 중 큰 값 사용 */
+      min-height: max(var(--img-h), calc(100vh - (var(--page-vmargin) * 2)));
+      padding-bottom: calc(var(--pad) + 24px); /* 버튼을 더 아래로 */
       border-radius:var(--radius); background:white;
       box-shadow:0 10px 56px #b2dfdb80; text-align:center;
       border:2px solid #00bfae20; display:flex; flex-direction:column;
@@ -75,7 +80,8 @@ index_html = r'''
       flex:1 1 560px; max-width:720px; min-width:340px;
       background:rgba(255,255,255,0.90); border-radius:var(--radius);
       box-shadow:0 10px 56px #b2dfdb30; display:flex; align-items:center; justify-content:center;
-      padding:24px 20px; margin:0; min-height:var(--img-h);
+      padding:24px 20px; margin:0;
+      min-height: max(var(--img-h), calc(100vh - (var(--page-vmargin) * 2)));
     }
     .imgbox img{
       max-width:100%; max-height:calc(var(--img-h) - 16px);
@@ -119,10 +125,10 @@ index_html = r'''
     th{ background:#00bfae; color:white; font-weight:700; }
     tr:nth-child(even) td{ background:#f0f5f5; }
 
-    /* 하단 링크 영역 (흰 배경 내부, 더 아래 배치) */
+    /* 하단 링크: 흰 배경 내부 맨 아래에 고정되도록 */
     .container-footer{
-      margin-top:auto;           /* 내용 밀어내고 하단으로 */
-      padding-top:24px;          /* 위 여백 */
+      margin-top:auto;           /* 내용을 밀어내 아래로 */
+      padding-top:28px;          /* 살짝 더 내려가게 */
     }
     .linklike{
       background:none; border:none; color:#00bfae; cursor:pointer;
@@ -137,9 +143,8 @@ index_html = r'''
     }
 
     @media (max-width: 1280px), (max-height: 820px){
-      .flex-wrap{ gap: clamp(14px,2.4vw,26px); margin: clamp(10px,2.6vh,22px) auto; }
       .container{ max-width:780px; flex:1 1 720px; }
-      .imgbox{ min-height: clamp(360px, 56vh, 640px); padding:18px; }
+      .imgbox{ padding:18px; }
       th, td{ padding:12px 10px; border-radius:12px; }
     }
     @media (max-width: 900px){
@@ -198,7 +203,7 @@ index_html = r'''
         <div style="color:#666;font-size:2em;margin-top:24px;">아직 준비되지 않은 도서 입니다</div>
       {% endif %}
 
-      <!-- 하단(흰 배경 내부, 조금 더 아래) -->
+      <!-- 흰 배경 내부 최하단 -->
       <div class="container-footer">
         <button type="button" class="linklike" onclick="showPwModal();return false;">관리자/도서업데이트</button>
       </div>
@@ -241,7 +246,7 @@ index_html = r'''
 </html>
 '''
 
-# 관리자 로그인 폼 (GET 접근/실패 시)
+# 관리자 로그인/페이지(이전 버전과 동일)
 admin_login_html = r'''
 <!DOCTYPE html>
 <html lang="ko">
@@ -273,7 +278,6 @@ admin_login_html = r'''
 </html>
 '''
 
-# 관리자 화면 (파일명 유지 다운로드/삭제 UI 동일)
 admin_html = r'''
 <!DOCTYPE html>
 <html lang="ko">
@@ -432,7 +436,6 @@ def read_books():
     if not latest_file:
         raise FileNotFoundError("업로드된 도서 데이터가 없습니다!")
 
-    # ISBN은 문자열로
     df = pd.read_excel(latest_file, dtype={'ISBN': str})
 
     required = ["제목", "최종권수", "저자", "ISBN", "위치"]
@@ -440,9 +443,8 @@ def read_books():
     if missing:
         raise ValueError(f"엑셀에 {missing} 컬럼이 없습니다!")
 
-    # NaN 처리 및 정수처럼 보이는 값의 소수점 제거
     df = df.fillna('')
-    df = df.applymap(lambda x: '' if ( isinstance(x, str) and x.strip().lower() in ('nan','none','null') ) else x)
+    df = df.applymap(lambda x: '' if (isinstance(x, str) and x.strip().lower() in ('nan','none','null')) else x)
 
     def clean_int_like(x):
         if x == '' or x is None: return ''
@@ -471,9 +473,6 @@ def current_image_path():
     return None
 
 def unique_filename(directory: str, original_name: str) -> str:
-    """
-    디렉토리 내에서 원래 파일명을 유지하되, 중복 시 `_1`, `_2`…를 붙여 충돌을 피함.
-    """
     base_name = os.path.basename(original_name)
     name, ext = os.path.splitext(base_name)
     candidate = base_name
@@ -505,7 +504,6 @@ def index():
 
 @app.route("/dodo-manager", methods=["GET", "POST"])
 def admin():
-    # 로그인 처리(성공 메시지 없음)
     if request.method == "POST" and request.form.get("action") == "login":
         pw = request.form.get("password", "")
         if pw == ADMIN_PASSWORD:
@@ -517,7 +515,6 @@ def admin():
     if request.method == "GET":
         return render_template_string(admin_login_html)
 
-    # 관리자 액션 처리
     action = request.form.get("action")
     pw = request.form.get("password", "")
     if pw != ADMIN_PASSWORD:
@@ -528,7 +525,7 @@ def admin():
         file = request.files.get("file")
         if file and allowed_ext(file.filename, ALLOWED_XLSX):
             os.makedirs(BOOKS_DIR, exist_ok=True)
-            final_name = unique_filename(BOOKS_DIR, file.filename)  # 업로드한 파일명 유지
+            final_name = unique_filename(BOOKS_DIR, file.filename)
             file.save(os.path.join(BOOKS_DIR, final_name))
             flash("도서 데이터가 성공적으로 업로드되었습니다!", "success")
         else:
@@ -537,15 +534,13 @@ def admin():
     elif action == "image":
         imgfile = request.files.get("imgfile")
         if imgfile and allowed_ext(imgfile.filename, ALLOWED_IMG):
-            # 기존 이미지 정리(확장자 무관 1장 유지)
             for e in [".jpg", ".jpeg", ".png"]:
                 old = os.path.join(BOOKS_DIR, IMAGE_BASENAME + e)
                 if os.path.exists(old):
                     try: os.remove(old)
                     except: pass
             ext = os.path.splitext(imgfile.filename)[1].lower()
-            save_path = os.path.join(BOOKS_DIR, IMAGE_BASENAME + ext)
-            imgfile.save(save_path)
+            imgfile.save(os.path.join(BOOKS_DIR, IMAGE_BASENAME + ext))
             flash("이미지가 성공적으로 업로드되었습니다!", "success")
         else:
             flash("올바른 이미지 파일(jpg/png)만 업로드 가능합니다.", "danger")
@@ -594,5 +589,5 @@ def uploaded_img():
 # ===================== 앱 시작 (waitress) =====================
 if __name__ == "__main__":
     from waitress import serve
-    port = int(os.environ.get("PORT", 5000))  # Render가 PORT를 주입
+    port = int(os.environ.get("PORT", 5000))
     serve(app, host="0.0.0.0", port=port)
