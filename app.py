@@ -65,13 +65,12 @@ index_html = r'''
       gap:var(--gap);
     }
 
-    /* 컨테이너/이미지 박스가 (검색 전에도) 충분히 크게 보이도록: 83vh 기준 (≈10% 축소) */
+    /* 높이(검색 전에도 충분히 크게 보이도록): 83vh 기준 */
     .container{
       max-width:800px; flex:1 1 740px; min-width:360px;
       padding:var(--pad);
       min-height: max(var(--img-h), calc(83vh - (var(--page-vmargin) * 2)));
-      /* 버튼을 더 아래(바닥)로: 바닥 패딩 과하지 않게 */
-      padding-bottom: var(--pad);
+      padding-bottom: var(--pad); /* 하단 버튼 공간 */
 
       border-radius:var(--radius); background:white;
       box-shadow:0 10px 56px #b2dfdb80; text-align:center;
@@ -148,27 +147,63 @@ index_html = r'''
       .imgbox{ padding:18px; }
       th, td{ padding:10px 10px; border-radius:12px; }
     }
+
+    /* ▶ 모바일 최적화: 세로가 너무 길지 않게 svh 사용 */
     @media (max-width: 900px){
-      .flex-wrap{ flex-direction:column; align-items:center; }
-      .container, .imgbox{ max-width:96vw; }
+      .flex-wrap{
+        flex-direction:column; 
+        align-items:center; 
+        gap: 14px; 
+        margin: 8px auto;
+        max-width: 680px;     /* 모바일에서 좌우 여백 확보 */
+        width: 94vw;
+      }
+
+      .container, .imgbox{ width: 100%; flex: 1 1 auto; }
+
+      .container{
+        min-height: clamp(360px, 48svh, 560px);
+        padding: 18px;
+        padding-bottom: 18px; /* 하단 버튼 공간 살짝 유지 */
+      }
+      .imgbox{
+        min-height: clamp(220px, 36svh, 420px);
+        padding: 14px;
+      }
+
+      .container-footer{
+        margin-top:auto;
+        padding-top: 12px;
+      }
     }
 
-    /* 비밀번호 팝업 */
-    #pwModal{
-      display:none; position:fixed; left:0; top:0; width:100vw; height:100vh;
-      background:rgba(0,0,0,0.21); z-index:9999; justify-content:center; align-items:center;
+    /* svh 지원 안 하는 구형 브라우저 폴백 */
+    @supports not (height: 1svh) {
+      @media (max-width: 900px){
+        .container{ min-height: clamp(360px, 48vh, 560px); }
+        .imgbox{ min-height: clamp(220px, 36vh, 420px); }
+      }
     }
-    #pwModal .modal-inner{
-      background:white; padding:24px 28px 18px 28px; border-radius:18px; min-width:320px;
-      box-shadow:0 4px 30px #0001; text-align:center; position:relative
-    }
-    #pwModal .close-x{ position:absolute; top:7px; right:13px; font-size:1.45em; cursor:pointer; color:#ccc; }
-    #pwModal input{ padding:10px 14px; border:1.2px solid #b2dfdb; border-radius:10px; width:80%; box-sizing:border-box; }
 
-    /* 팝업 버튼 (가로 정렬 + 동일 폰트) */
-    #pwModal .btn{ background:#00bfae; color:white; padding:8px 14px; border-radius:10px; font-weight:600; font-size:1rem; border:none; cursor:pointer }
-    #pwModal .cancel{ background:#eee; color:#666; }
-    #pwModal .btn-row{ display:flex; gap:10px; justify-content:center; align-items:center; margin-top:10px; }
+    /* ===== 여기서부터: 데스크톱에서 좌우 정확히 5:5로 강제 ===== */
+    @media (min-width: 901px){
+      .flex-wrap{
+        flex-direction: row;     /* 가로 배치 */
+        flex-wrap: nowrap;       /* 줄바꿈 방지 */
+      }
+      .container,
+      .imgbox{
+        flex: 0 0 50%;           /* 50% 고정 점유 */
+        width: 50%;
+        max-width: none;         /* 이전 max-width 제한 해제 */
+        min-width: 0;            /* 내부 넘침 방지 */
+      }
+      .imgbox img{
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+      }
+    }
   </style>
 </head>
 <body>
@@ -210,18 +245,18 @@ index_html = r'''
       </div>
 
       <!-- 비번 팝업 -->
-      <div id="pwModal">
-        <div class="modal-inner">
+      <div id="pwModal" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.21); z-index:9999; justify-content:center; align-items:center;">
+        <div class="modal-inner" style="background:white; padding:24px 28px 18px 28px; border-radius:18px; min-width:320px; box-shadow:0 4px 30px #0001; text-align:center; position:relative">
           <div style="font-size:1.05rem;font-weight:700;margin-bottom:10px;color:#00695c;">관리자 비밀번호</div>
           <form id="pwForm" method="post" action="/dodo-manager">
-            <input type="password" name="password" placeholder="비밀번호" required>
+            <input type="password" name="password" placeholder="비밀번호" required style="padding:10px 14px; border:1.2px solid #b2dfdb; border-radius:10px; width:80%; box-sizing:border-box;">
             <input type="hidden" name="action" value="login">
-            <div class="btn-row">
-              <button type="submit" class="btn">확인</button>
-              <button type="button" class="btn cancel" onclick="hidePwModal()">취소</button>
+            <div class="btn-row" style="display:flex; gap:10px; justify-content:center; align-items:center; margin-top:10px;">
+              <button type="submit" class="btn" style="background:#00bfae; color:white; padding:8px 14px; border-radius:10px; font-weight:600; font-size:1rem; border:none; cursor:pointer">확인</button>
+              <button type="button" class="btn cancel" onclick="hidePwModal()" style="background:#eee; color:#666; padding:8px 14px; border-radius:10px; font-weight:600; font-size:1rem; border:none; cursor:pointer">취소</button>
             </div>
           </form>
-          <span class="close-x" onclick="hidePwModal()">×</span>
+          <span class="close-x" onclick="hidePwModal()" style="position:absolute; top:7px; right:13px; font-size:1.45em; cursor:pointer; color:#ccc;">×</span>
         </div>
       </div>
 
