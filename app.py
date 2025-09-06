@@ -115,9 +115,7 @@ index_html = r'''
         function hidePwModal(){ document.getElementById('pwModal').style.display='none'; }
         document.addEventListener('DOMContentLoaded', function(){
           const pwForm = document.getElementById('pwForm');
-          if(pwForm){
-            pwForm.addEventListener('submit', function(){ hidePwModal(); });
-          }
+          if(pwForm){ pwForm.addEventListener('submit', function(){ hidePwModal(); }); }
         });
       </script>
     </div>
@@ -193,6 +191,7 @@ admin_html = r'''
     #downloadModal .filename{max-width:220px;overflow:hidden;text-overflow:ellipsis;}
     #downloadModal .download-btn{background:#00796b;font-size:0.97em;}
     #downloadModal .delete-btn{background:#c62828;color:white;font-size:0.97em;}
+    #status{margin-top:8px;color:#c62828;font-size:0.95em;}
   </style>
 </head>
 <body>
@@ -227,6 +226,7 @@ admin_html = r'''
         기존 도서 데이터 다운로드/삭제
       </button>
       <a href="/">검색 화면으로</a>
+      <div id="status"></div>
     </div>
 
     <div id="downloadModal">
@@ -251,42 +251,96 @@ admin_html = r'''
       }
     });
 
-    function showDownloadModal(){ document.getElementById('downloadModal').style.display='flex'; loadFileList(); }
+    function showDownloadModal(){
+      document.getElementById('downloadModal').style.display='flex';
+      loadFileList();
+    }
     function hideDownloadModal(){ document.getElementById('downloadModal').style.display='none'; }
 
-    function loadFileList(){
-      fetch('/filelist?pw={{ admin_pw }}').then(r=>r.json()).then(function(data){
-        var ul=document.getElementById('fileList');
-        if(!data || !data.files || data.files.length==0){ ul.innerHTML='<li>파일이 없습니다</li>'; return; }
-        ul.innerHTML='';
-        data.files.forEach(function(file){
-          var li=document.createElement('li');
-          li.innerHTML='<span class="filename">'+file+'</span>'+
-            '<button class="download-btn" onclick="downloadFile(\\''+file+'\\')">다운로드</button>'+
-            '<button class="delete-btn" onclick="deleteFile(\\''+file+'\\')">삭제</button>';
-          ul.appendChild(li);
-        });
-      });
+    function setStatus(msg){
+      var s = document.getElementById('status');
+      if(s){ s.textContent = msg || ''; }
     }
 
-    // 파일명/비번 인코딩하여 새 탭으로 다운로드 (팝업 차단 회피)
-    function downloadFile(fname){
-      const url = '/download/' + encodeURIComponent(fname) + '?pw={{ admin_pw }}';
-      const a = document.createElement('a');
-      a.href = url;
-      a.target = '_blank';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-    function deleteFile(fname){
-      if(confirm(fname+' 파일을 삭제하시겠습니까?')){
-        fetch('/deletefile/'+encodeURIComponent(fname)+'?pw={{ admin_pw }}', {method:'POST'})
-          .then(r=>r.json())
-          .then(function(data){
-            if(data.success) loadFileList(); else alert(data.msg || '삭제 실패');
+    function loadFileList(){
+      setStatus('');
+      fetch('/filelist?pw={{ admin_pw }}')
+        .then(function(r){
+          if(!r.ok){ setStatus('목록 로드 실패: ' + r.status); }
+          return r.json();
+        })
+        .then(function(data){
+          var ul=document.getElementById('fileList');
+          if(!data){ ul.innerHTML='<li>오류: 응답 없음</li>'; return; }
+          if(data.error){ ul.innerHTML='<li>'+ (data.error || '오류') +'</li>'; return; }
+          if(!data.files || data.files.length==0){ ul.innerHTML='<li>파일이 없습니다</li>'; return; }
+          ul.innerHTML='';
+          data.files.forEach(function(file){
+            var li=document.createElement('li');
+            var nameSpan = document.createElement('span');
+            nameSpan.className='filename';
+            nameSpan.textContent = file;
+
+            var dBtn = document.createElement('button');
+            dBtn.className='download-btn';
+            dBtn.textContent='다운로드';
+            dBtn.addEventListener('click', function(){ downloadFile(file); });
+
+            var delBtn = document.createElement('button');
+            delBtn.className='delete-btn';
+            delBtn.textContent='삭제';
+            delBtn.addEventListener('click', function(){ deleteFile(file); });
+
+            li.appendChild(nameSpan);
+            li.appendChild(dBtn);
+            li.appendChild(delBtn);
+            ul.appendChild(li);
           });
-      }
+        })
+        .catch(function(err){
+          setStatus('목록 로드 오류: ' + (err && err.message ? err.message : err));
+        });
+    }
+
+    // Blob 다운로드 방식 (팝업 차단 무관)
+    function downloadFile(fname){
+      setStatus('');
+      const url = '/download/' + encodeURIComponent(fname) + '?pw={{ admin_pw }}';
+      fetch(url)
+        .then(function(resp){
+          if(!resp.ok){ setStatus('다운로드 실패: ' + resp.status); return null; }
+          return resp.blob().then(function(blob){
+            const a = document.createElement('a');
+            const objectUrl = URL.createObjectURL(blob);
+            a.href = objectUrl;
+            a.download = fname; // 저장 파일명
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(objectUrl);
+            a.remove();
+          });
+        })
+        .catch(function(err){
+          setStatus('다운로드 오류: ' + (err && err.message ? err.message : err));
+        });
+    }
+
+    function deleteFile(fname){
+      setStatus('');
+      if(!confirm(fname+' 파일을 삭제하시겠습니까?')) return;
+      fetch('/deletefile/'+encodeURIComponent(fname)+'?pw={{ admin_pw }}', {method:'POST'})
+        .then(function(r){
+          if(!r.ok){ setStatus('삭제 실패: ' + r.status); return null; }
+          return r.json();
+        })
+        .then(function(data){
+          if(!data) return;
+          if(data.success){ loadFileList(); }
+          else{ setStatus(data.msg || '삭제 실패'); }
+        })
+        .catch(function(err){
+          setStatus('삭제 오류: ' + (err && err.message ? err.message : err));
+        });
     }
   </script>
 </body>
@@ -424,10 +478,10 @@ def admin():
 def filelist():
     # 쿼리스트링 pw 로 검증
     if request.args.get("pw") != ADMIN_PASSWORD:
-        return jsonify({"files": []})
+        return jsonify({"ok": False, "error": "Unauthorized", "files": []}), 401
     files = [f for f in os.listdir(BOOKS_DIR) if f.endswith(".xlsx")]
     files.sort(reverse=True)
-    return jsonify({"files": files})
+    return jsonify({"ok": True, "files": files})
 
 @app.route("/download/<path:filename>")
 def download_file(filename):
@@ -443,15 +497,15 @@ def download_file(filename):
             return send_from_directory(BOOKS_DIR, filename, as_attachment=True, attachment_filename=filename)
     return "File not found", 404
 
-@app.route("/deletefile/<filename>", methods=["POST"])
+@app.route("/deletefile/<path:filename>", methods=["POST"])
 def delete_file(filename):
     if request.args.get("pw") != ADMIN_PASSWORD:
-        return jsonify({"success": False, "msg": "권한 없음"})
+        return jsonify({"success": False, "msg": "권한 없음"}), 401
     file_path = os.path.join(BOOKS_DIR, filename)
     if os.path.exists(file_path) and filename.endswith(".xlsx"):
         os.remove(file_path)
         return jsonify({"success": True})
-    return jsonify({"success": False, "msg": "File not found"})
+    return jsonify({"success": False, "msg": "File not found"}), 404
 
 @app.route("/uploaded_img")
 def uploaded_img():
