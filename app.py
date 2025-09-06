@@ -12,7 +12,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "change_me")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "change_me")
 
 # 무료 테스트: /opt/render/project/src/books_files
-# 유료+디스크: /data/books_files
+# 유료 + 디스크: /data/books_files
 BOOKS_DIR = os.environ.get("BOOKS_DIR", "/opt/render/project/src/books_files")
 os.makedirs(BOOKS_DIR, exist_ok=True)
 
@@ -116,10 +116,7 @@ index_html = r'''
         document.addEventListener('DOMContentLoaded', function(){
           const pwForm = document.getElementById('pwForm');
           if(pwForm){
-            pwForm.addEventListener('submit', function(){
-              // 제출 시 팝업 닫기(서버 이동)
-              hidePwModal();
-            });
+            pwForm.addEventListener('submit', function(){ hidePwModal(); });
           }
         });
       </script>
@@ -137,7 +134,7 @@ index_html = r'''
 </html>
 '''
 
-# 관리자 로그인 실패 시 간단 안내 (GET 직접 접근 대비)
+# 관리자 로그인 폼 (GET 접근/실패 시)
 admin_login_html = r'''
 <!DOCTYPE html>
 <html lang="ko">
@@ -169,7 +166,7 @@ admin_login_html = r'''
 </html>
 '''
 
-# 로그인 성공 이후의 관리자 화면 (비번 재입력 없음, 숨김전달만)
+# 관리자 화면 (상단 링크 제거, 하단에만 '검색 화면으로' 유지)
 admin_html = r'''
 <!DOCTYPE html>
 <html lang="ko">
@@ -201,9 +198,6 @@ admin_html = r'''
 <body>
   <div class="container">
     <h1>도서 데이터 업로드 (관리자)</h1>
-    <div style="margin-bottom:8px;">
-      <a href="/">← 검색 화면</a>
-    </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -229,7 +223,9 @@ admin_html = r'''
     </form>
 
     <div style="margin-top:22px;">
-      <a href="#" onclick="showDownloadModal();return false;">기존 도서 데이터 다운로드/삭제</a>
+      <button id="openDownload" type="button" style="background:none;border:none;color:#00bfae;cursor:pointer;text-decoration:underline;">
+        기존 도서 데이터 다운로드/삭제
+      </button>
       <a href="/">검색 화면으로</a>
     </div>
 
@@ -244,12 +240,24 @@ admin_html = r'''
   </div>
 
   <script>
+    // 버튼 클릭 시 모달 열기 (기본 앵커 동작 없음)
+    document.addEventListener('DOMContentLoaded', function () {
+      var btn = document.getElementById('openDownload');
+      if (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          showDownloadModal();
+        });
+      }
+    });
+
     function showDownloadModal(){ document.getElementById('downloadModal').style.display='flex'; loadFileList(); }
     function hideDownloadModal(){ document.getElementById('downloadModal').style.display='none'; }
+
     function loadFileList(){
       fetch('/filelist?pw={{ admin_pw }}').then(r=>r.json()).then(function(data){
         var ul=document.getElementById('fileList');
-        if(data.files.length==0){ ul.innerHTML='<li>파일이 없습니다</li>'; return; }
+        if(!data || !data.files || data.files.length==0){ ul.innerHTML='<li>파일이 없습니다</li>'; return; }
         ul.innerHTML='';
         data.files.forEach(function(file){
           var li=document.createElement('li');
@@ -260,26 +268,27 @@ admin_html = r'''
         });
       });
     }
-  function downloadFile(fname){
-    const url = '/download/' + encodeURIComponent(fname) + '?pw={{ admin_pw }}';
-    const a = document.createElement('a');
-    a.href = url;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
 
-  function deleteFile(fname){
-    if(confirm(fname+' 파일을 삭제하시겠습니까?')){
-      fetch('/deletefile/'+encodeURIComponent(fname)+'?pw={{ admin_pw }}', {method:'POST'})
-        .then(r=>r.json())
-        .then(function(data){
-          if(data.success) loadFileList(); else alert(data.msg || '삭제 실패');
-        });
+    // 파일명/비번 인코딩하여 새 탭으로 다운로드 (팝업 차단 회피)
+    function downloadFile(fname){
+      const url = '/download/' + encodeURIComponent(fname) + '?pw={{ admin_pw }}';
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     }
-  }
-</script>
+    function deleteFile(fname){
+      if(confirm(fname+' 파일을 삭제하시겠습니까?')){
+        fetch('/deletefile/'+encodeURIComponent(fname)+'?pw={{ admin_pw }}', {method:'POST'})
+          .then(r=>r.json())
+          .then(function(data){
+            if(data.success) loadFileList(); else alert(data.msg || '삭제 실패');
+          });
+      }
+    }
+  </script>
 </body>
 </html>
 '''
@@ -296,7 +305,8 @@ def read_books():
     latest_file = latest_books_file()
     if not latest_file:
         raise FileNotFoundError("업로드된 도서 데이터가 없습니다!")
-    # ISBN은 문자열로 고정 (숫자처리 방지)
+
+    # ISBN은 숫자로 읽히면 깨질 수 있으므로 문자열로 강제
     df = pd.read_excel(latest_file, dtype={'ISBN': str})
 
     required = ["제목", "최종권수", "저자", "ISBN", "위치"]
@@ -304,11 +314,11 @@ def read_books():
     if missing:
         raise ValueError(f"엑셀에 {missing} 컬럼이 없습니다!")
 
-    # NaN/None/'nan'/'null' → 공백
+    # NaN/None/'nan'/'null' -> 공백
     df = df.fillna('')
-    df = df.applymap(lambda x: '' if (isinstance(x, str) and x.strip().lower() in ('nan','none','null')) else x)
+    df = df.applymap(lambda x: '' if (isinstance(x, str) and x.strip().lower() in ('nan', 'none', 'null')) else x)
 
-    # 정수 실수 표기 정리: 12.0 -> 12 (문자 그대로 보이게)
+    # 정수처럼 보이는 값은 소수점 제거 (12.0 -> 12)
     def clean_int_like(x):
         if x == '' or x is None:
             return ''
@@ -362,8 +372,8 @@ def admin():
     if request.method == "POST" and request.form.get("action") == "login":
         pw = request.form.get("password", "")
         if pw == ADMIN_PASSWORD:
-            # 로그인 성공 → 관리자 화면 렌더(비번을 숨김필드/쿼리로 넘겨 이후 요청 검증)
             flash("관리자 인증 성공!", "success")
+            # 관리자 화면 렌더 (이후 요청은 hidden field/쿼리로 pw 전달)
             return render_template_string(admin_html, admin_pw=pw)
         else:
             flash("비밀번호가 틀렸습니다.", "danger")
@@ -373,7 +383,7 @@ def admin():
     if request.method == "GET":
         return render_template_string(admin_login_html)
 
-    # 3) 관리자 화면에서 온 업로드/이미지 처리 (비번 동봉)
+    # 3) 관리자 화면 내 액션 처리 (비번 동봉)
     action = request.form.get("action")
     pw = request.form.get("password", "")
     if pw != ADMIN_PASSWORD:
@@ -394,6 +404,7 @@ def admin():
     elif action == "image":
         imgfile = request.files.get("imgfile")
         if imgfile and allowed_ext(imgfile.filename, ALLOWED_IMG):
+            # 기존 이미지 정리(확장자 상관없이 1장만 유지)
             for e in [".jpg", ".jpeg", ".png"]:
                 old = os.path.join(BOOKS_DIR, IMAGE_BASENAME + e)
                 if os.path.exists(old):
@@ -418,13 +429,18 @@ def filelist():
     files.sort(reverse=True)
     return jsonify({"files": files})
 
-@app.route("/download/<filename>")
+@app.route("/download/<path:filename>")
 def download_file(filename):
     if request.args.get("pw") != ADMIN_PASSWORD:
         return "Unauthorized", 401
     file_path = os.path.join(BOOKS_DIR, filename)
     if os.path.exists(file_path) and filename.endswith(".xlsx"):
-        return send_from_directory(BOOKS_DIR, filename, as_attachment=True)
+        try:
+            # 최신 Flask/Werkzeug
+            return send_from_directory(BOOKS_DIR, filename, as_attachment=True, download_name=filename)
+        except TypeError:
+            # 구버전 호환
+            return send_from_directory(BOOKS_DIR, filename, as_attachment=True, attachment_filename=filename)
     return "File not found", 404
 
 @app.route("/deletefile/<filename>", methods=["POST"])
