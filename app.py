@@ -34,18 +34,19 @@ index_html = r'''
   <title>만화카페 도도 도서검색</title>
   <style>
     :root{
-      --gap: clamp(18px, 3.5vw, 44px);
-      --pad: clamp(18px, 3.6vw, 48px);
+      /* 더 큼직하게 보이도록 상향 */
+      --gap: clamp(16px, 3vw, 40px);
+      --pad: clamp(18px, 3.8vw, 52px);
       --radius: clamp(16px, 3.2vw, 44px);
-      --img-h: clamp(320px, 50vh, 600px);
-      --h1: clamp(1.7rem, 2.8vw, 2.6rem);
-      --text: clamp(1.02rem, 1.15vw, 1.18rem);
-      --btn-fz: clamp(1rem, 1.25vw, 1.2rem);
-      --btn-py: clamp(12px, 1.4vw, 18px);
-      --btn-px: clamp(22px, 2.4vw, 40px);
-      --input-fz: clamp(1.05rem, 1.25vw, 1.25rem);
-      --input-pd: clamp(12px, 1.5vw, 18px);
-      --max-input: 640px;
+      --img-h: clamp(420px, 60vh, 720px);
+      --h1: clamp(1.9rem, 3vw, 2.8rem);
+      --text: clamp(1.06rem, 1.25vw, 1.22rem);
+      --btn-fz: clamp(1.05rem, 1.3vw, 1.25rem);
+      --btn-py: clamp(12px, 1.5vw, 18px);
+      --btn-px: clamp(22px, 2.6vw, 44px);
+      --input-fz: clamp(1.1rem, 1.35vw, 1.3rem);
+      --input-pd: clamp(12px, 1.6vw, 18px);
+      --max-input: 720px;
     }
 
     body{
@@ -55,11 +56,11 @@ index_html = r'''
     }
     .flex-wrap{
       display:flex; flex-wrap:wrap; justify-content:center; align-items:stretch;
-      max-width:1440px; margin:clamp(16px,4.5vh,40px) auto;
+      max-width:1560px; margin:clamp(12px,4vh,32px) auto;
       gap:var(--gap);
     }
     .container{
-      max-width:740px; flex:1 1 660px; min-width:340px;
+      max-width:820px; flex:1 1 760px; min-width:360px;
       padding:var(--pad);
       border-radius:var(--radius); background:white;
       box-shadow:0 10px 56px #b2dfdb80; text-align:center;
@@ -67,7 +68,7 @@ index_html = r'''
       min-height:0;
     }
     .imgbox{
-      flex:1 1 520px; max-width:640px; min-width:320px;
+      flex:1 1 560px; max-width:720px; min-width:340px;
       background:rgba(255,255,255,0.90); border-radius:var(--radius);
       box-shadow:0 10px 56px #b2dfdb30; display:flex; align-items:center; justify-content:center;
       padding:24px 20px; margin:0; min-height:var(--img-h);
@@ -80,8 +81,8 @@ index_html = r'''
 
     /* 폼/입력 중앙 정렬 */
     form{
-      margin-bottom:10px;
-      display:flex; flex-direction:column; align-items:center; gap:10px;
+      margin-bottom:12px;
+      display:flex; flex-direction:column; align-items:center; gap:12px;
     }
     input[type="text"]{
       display:block;
@@ -105,41 +106,35 @@ index_html = r'''
     button:hover{ background:#00acc1; }
     .result-box{ margin-top:26px;}
     table{
-      width:100%; border-collapse:separate; border-spacing:0 10px;
+      width:100%; border-collapse:separate; border-spacing:0 12px;
       font-size:var(--text);
     }
     th, td{
-      border:1.8px solid #b2dfdb; padding:12px 12px; border-radius:14px; background:white;
+      border:1.8px solid #b2dfdb; padding:14px 12px; border-radius:14px; background:white;
     }
     th{ background:#00bfae; color:white; font-weight:700; }
     tr:nth-child(even) td{ background:#f0f5f5; }
 
-    /* 하단 링크 영역 */
-    .container-footer{ margin-top:auto; padding-top:16px; }
+    /* 하단 링크 영역 (흰 배경 내부) */
+    .container-footer{ margin-top:auto; padding-top:18px; }
     .linklike{
-      background:none;
-      border:none;
-      color:#00bfae;
-      cursor:pointer;
-      text-decoration:underline;
-      font-weight:600;
-      font-size:1rem;
-      font-family:inherit;
-      padding:0;
-      transition:none;
+      background:none; border:none; color:#00bfae; cursor:pointer;
+      text-decoration:underline; font-weight:600; font-size:1rem; font-family:inherit;
+      padding:0; transition:none;
+      /* 시각 효과 완전 제거 */
+      text-shadow:none; box-shadow:none; outline:none;
+      -webkit-tap-highlight-color: transparent; filter:none; transform:none;
     }
-    /* hover 시 아무 변화 없게(일반 button:hover에 덮어쓰기) */
     .linklike:hover{
-      background:none !important;
-      color:#00bfae;
-      text-decoration:underline;
+      background:none !important; color:#00bfae; text-decoration:underline;
+      text-shadow:none; box-shadow:none; filter:none; transform:none;
     }
 
     @media (max-width: 1280px), (max-height: 820px){
       .flex-wrap{ gap: clamp(14px,2.4vw,26px); margin: clamp(10px,2.6vh,22px) auto; }
-      .container{ max-width:700px; flex:1 1 620px; }
-      .imgbox{ min-height: clamp(280px, 44vh, 520px); padding:18px; }
-      th, td{ padding:10px 10px; border-radius:12px; }
+      .container{ max-width:780px; flex:1 1 720px; }
+      .imgbox{ min-height: clamp(360px, 56vh, 640px); padding:18px; }
+      th, td{ padding:12px 10px; border-radius:12px; }
     }
     @media (max-width: 900px){
       .flex-wrap{ flex-direction:column; align-items:center; }
@@ -158,7 +153,7 @@ index_html = r'''
     #pwModal .close-x{ position:absolute; top:7px; right:13px; font-size:1.45em; cursor:pointer; color:#ccc; }
     #pwModal input{ padding:10px 14px; border:1.2px solid #b2dfdb; border-radius:10px; width:80%; box-sizing:border-box; }
 
-    /* 팝업 버튼 공통 + 가로 정렬 */
+    /* 팝업 버튼 (가로 정렬 + 동일 폰트) */
     #pwModal .btn{ background:#00bfae; color:white; padding:8px 14px; border-radius:10px; font-weight:600; font-size:1rem; border:none; cursor:pointer }
     #pwModal .cancel{ background:#eee; color:#666; }
     #pwModal .btn-row{ display:flex; gap:10px; justify-content:center; align-items:center; margin-top:10px; }
@@ -246,7 +241,7 @@ admin_login_html = r'''
 <html lang="ko">
 <head><meta charset="UTF-8"><title>관리자 로그인 | 만화카페 도도</title></head>
 <body style="font-family:'Noto Sans KR',sans-serif; background:#f6fcf8;">
-  <div style="max-width:480px;margin:80px auto;background:#fff;padding:28px;border-radius:16px;box-shadow:0 8px 24px #00000014;text-align:center">
+  <div style="max-width:520px;margin:80px auto;background:#fff;padding:28px;border-radius:16px;box-shadow:0 8px 24px #00000014;text-align:center">
     <h2 style="color:#00bfae;margin-top:0">관리자 로그인</h2>
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -259,7 +254,7 @@ admin_login_html = r'''
     {% endwith %}
     <form method="post" action="/dodo-manager">
       <input type="password" name="password" placeholder="관리자 비밀번호" required
-             style="padding:12px;border:1px solid #b2dfdb;border-radius:10px;width:70%">
+             style="padding:12px;border:1px solid #b2dfdb;border-radius:10px;width:72%">
       <input type="hidden" name="action" value="login">
       <br><button type="submit"
              style="margin-top:12px;background:#00bfae;color:#fff;border:none;padding:10px 16px;border-radius:10px;font-weight:bold;cursor:pointer">
@@ -280,7 +275,7 @@ admin_html = r'''
   <meta charset="UTF-8"><title>도서관리 | 만화카페 도도</title>
   <style>
     body{background:#f6fcf8;font-family:'Noto Sans KR',sans-serif;}
-    .container{max-width:970px;margin:60px auto;padding:36px 44px 24px 44px;border-radius:44px;background:white;box-shadow:0 8px 32px #b2dfdb60;text-align:center;}
+    .container{max-width:1040px;margin:60px auto;padding:36px 44px 24px 44px;border-radius:44px;background:white;box-shadow:0 8px 32px #b2dfdb60;text-align:center;}
     h1{color:#00bfae;margin-bottom:24px;}
     input,button{padding:13px;margin:10px;border-radius:16px;border:1.5px solid #b2dfdb;}
     button{background:#00bfae;color:white;border:none;cursor:pointer;font-weight:bold;}
@@ -290,35 +285,24 @@ admin_html = r'''
     a{color:#00bfae;margin:0 8px;}
     .filelabel{font-size:1.09em;color:#009b7d;margin-top:14px;}
     #downloadModal{display:none;position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.21);z-index:9999;justify-content:center;align-items:center;}
-    #downloadModal .modal-inner{background:white;padding:32px 32px 20px 32px;border-radius:18px;min-width:320px;box-shadow:0 4px 30px #0001;text-align:center;position:relative;}
+    #downloadModal .modal-inner{background:white;padding:32px 32px 20px 32px;border-radius:18px;min-width:340px;box-shadow:0 4px 30px #0001;text-align:center;position:relative;}
     #downloadModal .close-x{position:absolute;top:7px;right:13px;font-size:1.45em;cursor:pointer;color:#ccc;}
     #downloadModal button{background:#00bfae;color:white;padding:7px 20px;border-radius:10px;font-weight:bold;border:none;margin-top:12px;}
     #downloadModal button.cancel{background:#eee;color:#888;margin-left:7px;}
     #downloadModal ul{text-align:left;margin:10px auto;padding:0;max-height:300px;overflow:auto;}
     #downloadModal li{margin:5px 0;list-style:none;display:flex;align-items:center;justify-content:space-between;}
-    #downloadModal .filename{max-width:220px;overflow:hidden;text-overflow:ellipsis;}
+    #downloadModal .filename{max-width:360px;overflow:hidden;text-overflow:ellipsis;}
     #downloadModal .download-btn{background:#00796b;font-size:0.97em;}
     #downloadModal .delete-btn{background:#c62828;color:white;font-size:0.97em;}
     #status{margin-top:8px;color:#c62828;font-size:0.95em;}
 
-    /* 통일 텍스트 버튼 (관리자 하단 링크와 동일) */
+    /* 통일 텍스트 버튼 */
     .linklike{
-      background:none;
-      border:none;
-      color:#00bfae;
-      cursor:pointer;
-      text-decoration:underline;
-      font-weight:600;
-      font-size:1rem;
-      font-family:inherit;
-      padding:0;
-      transition:none;
+      background:none; border:none; color:#00bfae; cursor:pointer;
+      text-decoration:underline; font-weight:600; font-size:1rem; font-family:inherit;
+      padding:0; transition:none; text-shadow:none; box-shadow:none; outline:none; -webkit-tap-highlight-color:transparent;
     }
-    .linklike:hover{
-      background:none !important;
-      color:#00bfae;
-      text-decoration:underline;
-    }
+    .linklike:hover{ background:none!important; color:#00bfae; text-decoration:underline; text-shadow:none; box-shadow:none; }
   </style>
 </head>
 <body>
@@ -443,6 +427,7 @@ def read_books():
     if not latest_file:
         raise FileNotFoundError("업로드된 도서 데이터가 없습니다!")
 
+    # ISBN은 문자열로
     df = pd.read_excel(latest_file, dtype={'ISBN': str})
 
     required = ["제목", "최종권수", "저자", "ISBN", "위치"]
@@ -450,6 +435,7 @@ def read_books():
     if missing:
         raise ValueError(f"엑셀에 {missing} 컬럼이 없습니다!")
 
+    # NaN 처리 및 정수처럼 보이는 값의 소수점 제거
     df = df.fillna('')
     df = df.applymap(lambda x: '' if (isinstance(x, str) and x.strip().lower() in ('nan', 'none', 'null')) else x)
 
@@ -479,6 +465,20 @@ def current_image_path():
             return p
     return None
 
+def unique_filename(directory: str, original_name: str) -> str:
+    """
+    디렉토리 내에서 원래 파일명을 최대한 유지하되, 중복 시 `_1`, `_2`…를 붙여 충돌을 피함.
+    경로 주입 방지를 위해 basename만 사용.
+    """
+    base_name = os.path.basename(original_name)
+    name, ext = os.path.splitext(base_name)
+    candidate = base_name
+    idx = 1
+    while os.path.exists(os.path.join(directory, candidate)):
+        candidate = f"{name}_{idx}{ext}"
+        idx += 1
+    return candidate
+
 # ===================== 라우트 =====================
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -501,10 +501,10 @@ def index():
 
 @app.route("/dodo-manager", methods=["GET", "POST"])
 def admin():
+    # 로그인 처리 (성공 메시지 플래시는 제거)
     if request.method == "POST" and request.form.get("action") == "login":
         pw = request.form.get("password", "")
         if pw == ADMIN_PASSWORD:
-            flash("관리자 인증 성공!", "success")
             return render_template_string(admin_html, admin_pw=pw)
         else:
             flash("비밀번호가 틀렸습니다.", "danger")
@@ -513,6 +513,7 @@ def admin():
     if request.method == "GET":
         return render_template_string(admin_login_html)
 
+    # 관리자 액션 처리
     action = request.form.get("action")
     pw = request.form.get("password", "")
     if pw != ADMIN_PASSWORD:
@@ -523,9 +524,10 @@ def admin():
         file = request.files.get("file")
         if file and allowed_ext(file.filename, ALLOWED_XLSX):
             os.makedirs(BOOKS_DIR, exist_ok=True)
-            timestamp = time.strftime("%Y%m%d_%H%M%S")
-            save_name = f"books_{timestamp}.xlsx"
-            file.save(os.path.join(BOOKS_DIR, secure_filename(save_name)))
+            # 원래 파일명 유지(중복 시 _1, _2…)
+            final_name = unique_filename(BOOKS_DIR, file.filename)
+            save_path = os.path.join(BOOKS_DIR, final_name)
+            file.save(save_path)
             flash("도서 데이터가 성공적으로 업로드되었습니다!", "success")
         else:
             flash("올바른 엑셀 파일(.xlsx)만 업로드 가능합니다.", "danger")
@@ -533,6 +535,7 @@ def admin():
     elif action == "image":
         imgfile = request.files.get("imgfile")
         if imgfile and allowed_ext(imgfile.filename, ALLOWED_IMG):
+            # 기존 이미지 정리(확장자 무관 1장 유지)
             for e in [".jpg", ".jpeg", ".png"]:
                 old = os.path.join(BOOKS_DIR, IMAGE_BASENAME + e)
                 if os.path.exists(old):
@@ -589,5 +592,5 @@ def uploaded_img():
 # ===================== 앱 시작 (waitress) =====================
 if __name__ == "__main__":
     from waitress import serve
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 5000))  # Render가 PORT를 주입
     serve(app, host="0.0.0.0", port=port)
