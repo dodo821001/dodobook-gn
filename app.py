@@ -34,7 +34,6 @@ index_html = r'''
   <title>만화카페 도도 도서검색</title>
   <style>
     :root{
-      /* 화면에 꽉 차되 과소축소 방지한 값 */
       --gap: clamp(18px, 3.5vw, 44px);
       --pad: clamp(18px, 3.6vw, 48px);
       --radius: clamp(16px, 3.2vw, 44px);
@@ -65,7 +64,7 @@ index_html = r'''
       border-radius:var(--radius); background:white;
       box-shadow:0 10px 56px #b2dfdb80; text-align:center;
       border:2px solid #00bfae20; display:flex; flex-direction:column;
-      min-height: 0; /* 유연한 높이 */
+      min-height:0;
     }
     .imgbox{
       flex:1 1 520px; max-width:640px; min-width:320px;
@@ -115,12 +114,8 @@ index_html = r'''
     th{ background:#00bfae; color:white; font-weight:700; }
     tr:nth-child(even) td{ background:#f0f5f5; }
 
-    /* 하단 링크영역: 흰 배경 안쪽 하단 고정 느낌 */
-    .container-footer{
-      margin-top:auto; /* 내용 밀고 아래 붙임 */
-      padding-top:16px;
-    }
-    /* 링크처럼 보이는 통일 텍스트 버튼 (관리자/도서업데이트 포함) */
+    /* 하단 링크 영역 */
+    .container-footer{ margin-top:auto; padding-top:16px; }
     .linklike{
       background:none;
       border:none;
@@ -131,10 +126,13 @@ index_html = r'''
       font-size:1rem;
       font-family:inherit;
       padding:0;
+      transition:none;
     }
+    /* hover 시 아무 변화 없게(일반 button:hover에 덮어쓰기) */
     .linklike:hover{
-      color:#00acc1;
-      text-decoration:none;
+      background:none !important;
+      color:#00bfae;
+      text-decoration:underline;
     }
 
     @media (max-width: 1280px), (max-height: 820px){
@@ -160,15 +158,10 @@ index_html = r'''
     #pwModal .close-x{ position:absolute; top:7px; right:13px; font-size:1.45em; cursor:pointer; color:#ccc; }
     #pwModal input{ padding:10px 14px; border:1.2px solid #b2dfdb; border-radius:10px; width:80%; box-sizing:border-box; }
 
-    /* 팝업 버튼 폰트/크기 동일화 (1번과 동일 폰트 크기/굵기) */
-    #pwModal .btn{
-      background:#00bfae; color:white;
-      padding:8px 14px; border-radius:10px; font-weight:600; font-size:1rem;
-      border:none; margin-top:10px; cursor:pointer
-    }
-    #pwModal .cancel{
-      background:#eee; color:#666; margin-left:8px;
-    }
+    /* 팝업 버튼 공통 + 가로 정렬 */
+    #pwModal .btn{ background:#00bfae; color:white; padding:8px 14px; border-radius:10px; font-weight:600; font-size:1rem; border:none; cursor:pointer }
+    #pwModal .cancel{ background:#eee; color:#666; }
+    #pwModal .btn-row{ display:flex; gap:10px; justify-content:center; align-items:center; margin-top:10px; }
   </style>
 </head>
 <body>
@@ -204,7 +197,7 @@ index_html = r'''
         <div style="color:#666;font-size:2em;margin-top:24px;">아직 준비되지 않은 도서 입니다</div>
       {% endif %}
 
-      <!-- 하단 통일 스타일의 링크 영역 (흰 배경 내부) -->
+      <!-- 하단(흰 배경 내부) -->
       <div class="container-footer">
         <button type="button" class="linklike" onclick="showPwModal();return false;">관리자/도서업데이트</button>
       </div>
@@ -216,9 +209,10 @@ index_html = r'''
           <form id="pwForm" method="post" action="/dodo-manager">
             <input type="password" name="password" placeholder="비밀번호" required>
             <input type="hidden" name="action" value="login">
-            <br>
-            <button type="submit" class="btn">확인</button>
-            <button type="button" class="btn cancel" onclick="hidePwModal()">취소</button>
+            <div class="btn-row">
+              <button type="submit" class="btn">확인</button>
+              <button type="button" class="btn cancel" onclick="hidePwModal()">취소</button>
+            </div>
           </form>
           <span class="close-x" onclick="hidePwModal()">×</span>
         </div>
@@ -278,7 +272,7 @@ admin_login_html = r'''
 </html>
 '''
 
-# 관리자 화면 (하단 두 컨트롤 통일 스타일, Blob 다운로드)
+# 관리자 화면 (하단 링크 동일 폰트, Blob 다운로드)
 admin_html = r'''
 <!DOCTYPE html>
 <html lang="ko">
@@ -307,7 +301,7 @@ admin_html = r'''
     #downloadModal .delete-btn{background:#c62828;color:white;font-size:0.97em;}
     #status{margin-top:8px;color:#c62828;font-size:0.95em;}
 
-    /* 통일 텍스트 버튼 스타일 (관리자 하단 링크와 동일) */
+    /* 통일 텍스트 버튼 (관리자 하단 링크와 동일) */
     .linklike{
       background:none;
       border:none;
@@ -318,10 +312,12 @@ admin_html = r'''
       font-size:1rem;
       font-family:inherit;
       padding:0;
+      transition:none;
     }
     .linklike:hover{
-      color:#00acc1;
-      text-decoration:none;
+      background:none !important;
+      color:#00bfae;
+      text-decoration:underline;
     }
   </style>
 </head>
@@ -353,9 +349,7 @@ admin_html = r'''
     </form>
 
     <div style="margin-top:22px;">
-      <button id="openDownload" type="button" class="linklike">
-        기존 도서 데이터 다운로드/삭제
-      </button>
+      <button id="openDownload" type="button" class="linklike">기존 도서 데이터 다운로드/삭제</button>
       <a href="/" class="linklike">검색 화면으로</a>
       <div id="status"></div>
     </div>
@@ -371,7 +365,6 @@ admin_html = r'''
   </div>
 
   <script>
-    // 버튼 클릭 시 모달 열기
     document.addEventListener('DOMContentLoaded', function () {
       var btn = document.getElementById('openDownload');
       if (btn) {
@@ -387,19 +380,12 @@ admin_html = r'''
       loadFileList();
     }
     function hideDownloadModal(){ document.getElementById('downloadModal').style.display='none'; }
-
-    function setStatus(msg){
-      var s = document.getElementById('status');
-      if(s){ s.textContent = msg || ''; }
-    }
+    function setStatus(msg){ var s=document.getElementById('status'); if(s){ s.textContent=msg||''; } }
 
     function loadFileList(){
       setStatus('');
       fetch('/filelist?pw={{ admin_pw }}')
-        .then(function(r){
-          if(!r.ok){ setStatus('목록 로드 실패: ' + r.status); }
-          return r.json();
-        })
+        .then(function(r){ if(!r.ok){ setStatus('목록 로드 실패: '+r.status); } return r.json(); })
         .then(function(data){
           var ul=document.getElementById('fileList');
           if(!data){ ul.innerHTML='<li>오류: 응답 없음</li>'; return; }
@@ -408,32 +394,15 @@ admin_html = r'''
           ul.innerHTML='';
           data.files.forEach(function(file){
             var li=document.createElement('li');
-            var nameSpan = document.createElement('span');
-            nameSpan.className='filename';
-            nameSpan.textContent = file;
-
-            var dBtn = document.createElement('button');
-            dBtn.className='download-btn';
-            dBtn.textContent='다운로드';
-            dBtn.addEventListener('click', function(){ downloadFile(file); });
-
-            var delBtn = document.createElement('button');
-            delBtn.className='delete-btn';
-            delBtn.textContent='삭제';
-            delBtn.addEventListener('click', function(){ deleteFile(file); });
-
-            li.appendChild(nameSpan);
-            li.appendChild(dBtn);
-            li.appendChild(delBtn);
-            ul.appendChild(li);
+            var nameSpan=document.createElement('span'); nameSpan.className='filename'; nameSpan.textContent=file;
+            var dBtn=document.createElement('button'); dBtn.className='download-btn'; dBtn.textContent='다운로드'; dBtn.addEventListener('click', function(){ downloadFile(file); });
+            var delBtn=document.createElement('button'); delBtn.className='delete-btn'; delBtn.textContent='삭제'; delBtn.addEventListener('click', function(){ deleteFile(file); });
+            li.appendChild(nameSpan); li.appendChild(dBtn); li.appendChild(delBtn); ul.appendChild(li);
           });
         })
-        .catch(function(err){
-          setStatus('목록 로드 오류: ' + (err && err.message ? err.message : err));
-        });
+        .catch(function(err){ setStatus('목록 로드 오류: ' + (err && err.message ? err.message : err)); });
     }
 
-    // Blob 다운로드 방식
     function downloadFile(fname){
       setStatus('');
       const url = '/download/' + encodeURIComponent(fname) + '?pw={{ admin_pw }}';
@@ -441,37 +410,20 @@ admin_html = r'''
         .then(function(resp){
           if(!resp.ok){ setStatus('다운로드 실패: ' + resp.status); return null; }
           return resp.blob().then(function(blob){
-            const a = document.createElement('a');
-            const objectUrl = URL.createObjectURL(blob);
-            a.href = objectUrl;
-            a.download = fname;
-            document.body.appendChild(a);
-            a.click();
-            URL.revokeObjectURL(objectUrl);
-            a.remove();
+            const a=document.createElement('a'); const objectUrl=URL.createObjectURL(blob);
+            a.href=objectUrl; a.download=fname; document.body.appendChild(a); a.click(); URL.revokeObjectURL(objectUrl); a.remove();
           });
         })
-        .catch(function(err){
-          setStatus('다운로드 오류: ' + (err && err.message ? err.message : err));
-        });
+        .catch(function(err){ setStatus('다운로드 오류: ' + (err && err.message ? err.message : err)); });
     }
 
     function deleteFile(fname){
       setStatus('');
       if(!confirm(fname+' 파일을 삭제하시겠습니까?')) return;
       fetch('/deletefile/'+encodeURIComponent(fname)+'?pw={{ admin_pw }}', {method:'POST'})
-        .then(function(r){
-          if(!r.ok){ setStatus('삭제 실패: ' + r.status); return null; }
-          return r.json();
-        })
-        .then(function(data){
-          if(!data) return;
-          if(data.success){ loadFileList(); }
-          else{ setStatus(data.msg || '삭제 실패'); }
-        })
-        .catch(function(err){
-          setStatus('삭제 오류: ' + (err && err.message ? err.message : err));
-        });
+        .then(function(r){ if(!r.ok){ setStatus('삭제 실패: '+r.status); return null; } return r.json(); })
+        .then(function(data){ if(!data) return; if(data.success){ loadFileList(); } else{ setStatus(data.msg || '삭제 실패'); } })
+        .catch(function(err){ setStatus('삭제 오류: ' + (err && err.message ? err.message : err)); });
     }
   </script>
 </body>
@@ -491,7 +443,6 @@ def read_books():
     if not latest_file:
         raise FileNotFoundError("업로드된 도서 데이터가 없습니다!")
 
-    # ISBN은 숫자로 읽히면 깨질 수 있으므로 문자열로 강제
     df = pd.read_excel(latest_file, dtype={'ISBN': str})
 
     required = ["제목", "최종권수", "저자", "ISBN", "위치"]
@@ -499,20 +450,17 @@ def read_books():
     if missing:
         raise ValueError(f"엑셀에 {missing} 컬럼이 없습니다!")
 
-    # NaN/None/'nan'/'null' -> 공백
     df = df.fillna('')
     df = df.applymap(lambda x: '' if (isinstance(x, str) and x.strip().lower() in ('nan', 'none', 'null')) else x)
 
-    # 정수처럼 보이는 값은 소수점 제거 (12.0 -> 12)
     def clean_int_like(x):
-        if x == '' or x is None:
-            return ''
+        if x == '' or x is None: return ''
         s = str(x).strip()
         try:
-          f = float(s)
-          return str(int(f)) if f.is_integer() else s
+            f = float(s)
+            return str(int(f)) if f.is_integer() else s
         except (ValueError, TypeError):
-          return s
+            return s
 
     for col in ['최종권수', '위치']:
         if col in df.columns:
@@ -553,22 +501,18 @@ def index():
 
 @app.route("/dodo-manager", methods=["GET", "POST"])
 def admin():
-    # 1) 팝업/로그인 폼에서 넘어온 비밀번호 검사
     if request.method == "POST" and request.form.get("action") == "login":
         pw = request.form.get("password", "")
         if pw == ADMIN_PASSWORD:
             flash("관리자 인증 성공!", "success")
-            # 관리자 화면 렌더 (이후 요청은 hidden field/쿼리로 pw 전달)
             return render_template_string(admin_html, admin_pw=pw)
         else:
             flash("비밀번호가 틀렸습니다.", "danger")
             return render_template_string(admin_login_html)
 
-    # 2) GET 직접 접근 시엔 로그인 폼 표시
     if request.method == "GET":
         return render_template_string(admin_login_html)
 
-    # 3) 관리자 화면 내 액션 처리 (비번 동봉)
     action = request.form.get("action")
     pw = request.form.get("password", "")
     if pw != ADMIN_PASSWORD:
@@ -589,7 +533,6 @@ def admin():
     elif action == "image":
         imgfile = request.files.get("imgfile")
         if imgfile and allowed_ext(imgfile.filename, ALLOWED_IMG):
-            # 기존 이미지 정리(확장자 상관없이 1장만 유지)
             for e in [".jpg", ".jpeg", ".png"]:
                 old = os.path.join(BOOKS_DIR, IMAGE_BASENAME + e)
                 if os.path.exists(old):
@@ -602,12 +545,10 @@ def admin():
         else:
             flash("올바른 이미지 파일(jpg/png)만 업로드 가능합니다.", "danger")
 
-    # 처리 후에도 관리자 화면 유지 (비번 유지 전달)
     return render_template_string(admin_html, admin_pw=pw)
 
 @app.route("/filelist")
 def filelist():
-    # 쿼리스트링 pw 로 검증
     if request.args.get("pw") != ADMIN_PASSWORD:
         return jsonify({"ok": False, "error": "Unauthorized", "files": []}), 401
     files = [f for f in os.listdir(BOOKS_DIR) if f.endswith(".xlsx")]
@@ -621,10 +562,8 @@ def download_file(filename):
     file_path = os.path.join(BOOKS_DIR, filename)
     if os.path.exists(file_path) and filename.endswith(".xlsx"):
         try:
-            # 최신 Flask/Werkzeug
             return send_from_directory(BOOKS_DIR, filename, as_attachment=True, download_name=filename)
         except TypeError:
-            # 구버전 호환
             return send_from_directory(BOOKS_DIR, filename, as_attachment=True, attachment_filename=filename)
     return "File not found", 404
 
@@ -640,7 +579,6 @@ def delete_file(filename):
 
 @app.route("/uploaded_img")
 def uploaded_img():
-    # 공개 이미지
     for ext in [".jpg", ".jpeg", ".png"]:
         p = os.path.join(BOOKS_DIR, IMAGE_BASENAME + ext)
         if os.path.exists(p):
@@ -651,5 +589,5 @@ def uploaded_img():
 # ===================== 앱 시작 (waitress) =====================
 if __name__ == "__main__":
     from waitress import serve
-    port = int(os.environ.get("PORT", 5000))  # Render가 PORT를 주입
+    port = int(os.environ.get("PORT", 5000))
     serve(app, host="0.0.0.0", port=port)
