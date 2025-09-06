@@ -34,19 +34,19 @@ index_html = r'''
   <title>만화카페 도도 도서검색</title>
   <style>
     :root{
-      /* 화면에 좀 더 크고 꽉 차게 보이도록 상향 */
+      /* 화면에 꽉 차되 과소축소 방지한 값 */
       --gap: clamp(18px, 3.5vw, 44px);
       --pad: clamp(18px, 3.6vw, 48px);
       --radius: clamp(16px, 3.2vw, 44px);
-      --img-h: clamp(320px, 50vh, 600px); /* 이미지 박스 높이 키움 */
-      --h1: clamp(1.7rem, 2.8vw, 2.6rem); /* 제목 폰트 크게 */
+      --img-h: clamp(320px, 50vh, 600px);
+      --h1: clamp(1.7rem, 2.8vw, 2.6rem);
       --text: clamp(1.02rem, 1.15vw, 1.18rem);
       --btn-fz: clamp(1rem, 1.25vw, 1.2rem);
       --btn-py: clamp(12px, 1.4vw, 18px);
       --btn-px: clamp(22px, 2.4vw, 40px);
       --input-fz: clamp(1.05rem, 1.25vw, 1.25rem);
       --input-pd: clamp(12px, 1.5vw, 18px);
-      --max-input: 640px; /* 검색 입력칸 최대 너비 */
+      --max-input: 640px;
     }
 
     body{
@@ -60,12 +60,12 @@ index_html = r'''
       gap:var(--gap);
     }
     .container{
-      max-width:740px;          /* 카드 자체도 조금 더 크게 */
-      flex:1 1 660px; min-width:340px;
+      max-width:740px; flex:1 1 660px; min-width:340px;
       padding:var(--pad);
       border-radius:var(--radius); background:white;
       box-shadow:0 10px 56px #b2dfdb80; text-align:center;
       border:2px solid #00bfae20; display:flex; flex-direction:column;
+      min-height: 0; /* 유연한 높이 */
     }
     .imgbox{
       flex:1 1 520px; max-width:640px; min-width:320px;
@@ -79,22 +79,21 @@ index_html = r'''
     }
     h1{ color:#00695c; font-size:var(--h1); font-weight:bold; margin-bottom:18px; letter-spacing:-1px; }
 
-    /* 폼을 중앙 정렬 */
+    /* 폼/입력 중앙 정렬 */
     form{
       margin-bottom:10px;
       display:flex; flex-direction:column; align-items:center; gap:10px;
     }
-    /* 입력칸을 정확히 화면/컨테이너의 중앙에 */
     input[type="text"]{
       display:block;
-      width:min(var(--max-input), 96%);  /* 너무 넓지 않도록 최대 너비 적용 */
+      width:min(var(--max-input), 96%);
       max-width:var(--max-input);
-      margin:0 auto;                     /* 수평 중앙 정렬 */
+      margin:0 auto;
       font-size:var(--input-fz);
       padding:var(--input-pd);
       border-radius:16px;
       border:1.8px solid #b2dfdb;
-      box-sizing:border-box;             /* 패딩/보더 포함해 정확히 가운데 */
+      box-sizing:border-box;
       text-align:left;
     }
     button{
@@ -115,21 +114,41 @@ index_html = r'''
     }
     th{ background:#00bfae; color:white; font-weight:700; }
     tr:nth-child(even) td{ background:#f0f5f5; }
-    .admin-btns{ margin-top: clamp(36px, 8vh, 120px); }
+
+    /* 하단 링크영역: 흰 배경 안쪽 하단 고정 느낌 */
+    .container-footer{
+      margin-top:auto; /* 내용 밀고 아래 붙임 */
+      padding-top:16px;
+    }
+    /* 링크처럼 보이는 통일 텍스트 버튼 (관리자/도서업데이트 포함) */
+    .linklike{
+      background:none;
+      border:none;
+      color:#00bfae;
+      cursor:pointer;
+      text-decoration:underline;
+      font-weight:600;
+      font-size:1rem;
+      font-family:inherit;
+      padding:0;
+    }
+    .linklike:hover{
+      color:#00acc1;
+      text-decoration:none;
+    }
 
     @media (max-width: 1280px), (max-height: 820px){
       .flex-wrap{ gap: clamp(14px,2.4vw,26px); margin: clamp(10px,2.6vh,22px) auto; }
       .container{ max-width:700px; flex:1 1 620px; }
       .imgbox{ min-height: clamp(280px, 44vh, 520px); padding:18px; }
-      .admin-btns{ margin-top: clamp(28px, 7vh, 90px); }
       th, td{ padding:10px 10px; border-radius:12px; }
     }
-
     @media (max-width: 900px){
       .flex-wrap{ flex-direction:column; align-items:center; }
       .container, .imgbox{ max-width:96vw; }
     }
 
+    /* 비밀번호 팝업 */
     #pwModal{
       display:none; position:fixed; left:0; top:0; width:100vw; height:100vh;
       background:rgba(0,0,0,0.21); z-index:9999; justify-content:center; align-items:center;
@@ -140,8 +159,16 @@ index_html = r'''
     }
     #pwModal .close-x{ position:absolute; top:7px; right:13px; font-size:1.45em; cursor:pointer; color:#ccc; }
     #pwModal input{ padding:10px 14px; border:1.2px solid #b2dfdb; border-radius:10px; width:80%; box-sizing:border-box; }
-    #pwModal .btn{ background:#00bfae; color:white; padding:9px 18px; border-radius:10px; font-weight:bold; border:none; margin-top:12px; cursor:pointer }
-    #pwModal .cancel{ background:#eee; color:#888; margin-left:8px; }
+
+    /* 팝업 버튼 폰트/크기 동일화 (1번과 동일 폰트 크기/굵기) */
+    #pwModal .btn{
+      background:#00bfae; color:white;
+      padding:8px 14px; border-radius:10px; font-weight:600; font-size:1rem;
+      border:none; margin-top:10px; cursor:pointer
+    }
+    #pwModal .cancel{
+      background:#eee; color:#666; margin-left:8px;
+    }
   </style>
 </head>
 <body>
@@ -177,14 +204,15 @@ index_html = r'''
         <div style="color:#666;font-size:2em;margin-top:24px;">아직 준비되지 않은 도서 입니다</div>
       {% endif %}
 
-      <div class="admin-btns">
-        <button onclick="showPwModal();return false;" style="background:#00bfae;">관리자/도서업데이트</button>
+      <!-- 하단 통일 스타일의 링크 영역 (흰 배경 내부) -->
+      <div class="container-footer">
+        <button type="button" class="linklike" onclick="showPwModal();return false;">관리자/도서업데이트</button>
       </div>
 
-      <!-- 비번 팝업: 서버로 POST하여 검증 후 관리자 페이지 렌더 -->
+      <!-- 비번 팝업 -->
       <div id="pwModal">
         <div class="modal-inner">
-          <div style="font-size:1.08em;font-weight:bold;margin-bottom:10px;">관리자 비밀번호</div>
+          <div style="font-size:1.05rem;font-weight:700;margin-bottom:10px;color:#00695c;">관리자 비밀번호</div>
           <form id="pwForm" method="post" action="/dodo-manager">
             <input type="password" name="password" placeholder="비밀번호" required>
             <input type="hidden" name="action" value="login">
@@ -279,7 +307,7 @@ admin_html = r'''
     #downloadModal .delete-btn{background:#c62828;color:white;font-size:0.97em;}
     #status{margin-top:8px;color:#c62828;font-size:0.95em;}
 
-    /* 통일 텍스트 버튼 스타일 */
+    /* 통일 텍스트 버튼 스타일 (관리자 하단 링크와 동일) */
     .linklike{
       background:none;
       border:none;
@@ -481,10 +509,10 @@ def read_books():
             return ''
         s = str(x).strip()
         try:
-            f = float(s)
-            return str(int(f)) if f.is_integer() else s
+          f = float(s)
+          return str(int(f)) if f.is_integer() else s
         except (ValueError, TypeError):
-            return s
+          return s
 
     for col in ['최종권수', '위치']:
         if col in df.columns:
@@ -538,7 +566,7 @@ def admin():
 
     # 2) GET 직접 접근 시엔 로그인 폼 표시
     if request.method == "GET":
-      return render_template_string(admin_login_html)
+        return render_template_string(admin_login_html)
 
     # 3) 관리자 화면 내 액션 처리 (비번 동봉)
     action = request.form.get("action")
