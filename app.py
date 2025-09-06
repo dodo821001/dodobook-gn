@@ -38,10 +38,13 @@ index_html = r'''
       --pad: clamp(16px, 3.2vw, 44px);
       --radius: clamp(16px, 3vw, 40px);
 
+      /* 페이지 전체 가로 너비: 85vw (≈ 15% 축소), 상한 캡도 필요하면 min(85vw, 1400px) 사용 */
+      --page-width: min(85vw, 1400px);
+
       /* 페이지 상하 여백 */
       --page-vmargin: clamp(10px, 3.4vh, 28px);
 
-      /* 기본 목표 높이 (≈10% 더 작게) */
+      /* 기본 목표 높이 (전보다 약간 축소) */
       --img-h: clamp(340px, 47vh, 640px);
 
       --h1: clamp(1.8rem, 2.6vw, 2.5rem);
@@ -61,33 +64,41 @@ index_html = r'''
     }
     .flex-wrap{
       display:flex; flex-wrap:wrap; justify-content:center; align-items:stretch;
-      max-width:1500px; margin:var(--page-vmargin) auto;
+      width: var(--page-width);                    /* ← 85vw 적용 (가로 15% 축소) */
+      margin:var(--page-vmargin) auto;
       gap:var(--gap);
     }
 
-    /* 컨테이너/이미지 박스가 (검색 전에도) 충분히 크게 보이도록: 83vh 기준 (≈10% 축소) */
+    /* 컨테이너/이미지 박스: 데스크톱에서 정확히 5:5 */
+    .container, .imgbox{
+      flex: 1 1 50%;
+      min-width: 0;            /* 내용이 넘칠 때 줄바꿈 잘 되도록 */
+      width: 50%;              /* 보수적으로 5:5 보장 */
+    }
+
+    /* 높이(검색 전에도 충분히 크게 보이도록): 83vh 기준 유지 */
     .container{
-      max-width:800px; flex:1 1 740px; min-width:360px;
       padding:var(--pad);
       min-height: max(var(--img-h), calc(83vh - (var(--page-vmargin) * 2)));
-      /* 버튼을 더 아래(바닥)로: 바닥 패딩 과하지 않게 */
-      padding-bottom: var(--pad);
+      padding-bottom: var(--pad); /* 하단 버튼 공간 */
 
       border-radius:var(--radius); background:white;
       box-shadow:0 10px 56px #b2dfdb80; text-align:center;
       border:2px solid #00bfae20; display:flex; flex-direction:column;
     }
     .imgbox{
-      flex:1 1 540px; max-width:700px; min-width:340px;
       background:rgba(255,255,255,0.90); border-radius:var(--radius);
       box-shadow:0 10px 56px #b2dfdb30; display:flex; align-items:center; justify-content:center;
       padding:22px 18px; margin:0;
       min-height: max(var(--img-h), calc(83vh - (var(--page-vmargin) * 2)));
     }
     .imgbox img{
-      max-width:100%; max-height:calc(var(--img-h) - 14px);
+      width: 100%;
+      height: auto;
+      max-height:calc(var(--img-h) - 14px);
       border-radius:28px; box-shadow:0 2px 18px #b2dfdb40; object-fit:contain;
     }
+
     h1{ color:#00695c; font-size:var(--h1); font-weight:bold; margin-bottom:16px; letter-spacing:-1px; }
 
     /* 폼/입력 중앙 정렬 */
@@ -128,8 +139,8 @@ index_html = r'''
 
     /* 하단 링크: 흰 배경 내부 거의 바닥 */
     .container-footer{
-      margin-top:auto;     /* 아래로 밀착 */
-      padding-top:16px;    /* 위 콘텐츠와 살짝 간격만 */
+      margin-top:auto;
+      padding-top:16px;    /* 너무 떠 보이면 12~14로 줄이세요 */
     }
     .linklike{
       background:none; border:none; color:#00bfae; cursor:pointer;
@@ -144,31 +155,44 @@ index_html = r'''
     }
 
     @media (max-width: 1280px), (max-height: 820px){
-      .container{ max-width:760px; flex:1 1 700px; }
-      .imgbox{ padding:18px; }
       th, td{ padding:10px 10px; border-radius:12px; }
     }
+
+    /* ▶ 모바일 최적화: 세로가 너무 길지 않게 svh 사용 */
     @media (max-width: 900px){
-      .flex-wrap{ flex-direction:column; align-items:center; }
-      .container, .imgbox{ max-width:96vw; }
+      .flex-wrap{
+        flex-direction:column; 
+        align-items:center; 
+        gap: 14px; 
+        margin: 8px auto;
+        width: min(94vw, 680px);  /* 모바일에서 좌우 여백 조금 더 */
+      }
+
+      .container, .imgbox{ width: 100%; flex: 1 1 auto; }
+
+      .container{
+        min-height: clamp(360px, 48svh, 560px);
+        padding: 18px;
+        padding-bottom: 18px; /* 하단 버튼 공간 살짝 유지 */
+      }
+      .imgbox{
+        min-height: clamp(220px, 36svh, 420px);
+        padding: 14px;
+      }
+
+      .container-footer{
+        margin-top:auto;
+        padding-top: 12px;
+      }
     }
 
-    /* 비밀번호 팝업 */
-    #pwModal{
-      display:none; position:fixed; left:0; top:0; width:100vw; height:100vh;
-      background:rgba(0,0,0,0.21); z-index:9999; justify-content:center; align-items:center;
+    /* svh 지원 안 하는 구형 브라우저 폴백 */
+    @supports not (height: 1svh) {
+      @media (max-width: 900px){
+        .container{ min-height: clamp(360px, 48vh, 560px); }
+        .imgbox{ min-height: clamp(220px, 36vh, 420px); }
+      }
     }
-    #pwModal .modal-inner{
-      background:white; padding:24px 28px 18px 28px; border-radius:18px; min-width:320px;
-      box-shadow:0 4px 30px #0001; text-align:center; position:relative
-    }
-    #pwModal .close-x{ position:absolute; top:7px; right:13px; font-size:1.45em; cursor:pointer; color:#ccc; }
-    #pwModal input{ padding:10px 14px; border:1.2px solid #b2dfdb; border-radius:10px; width:80%; box-sizing:border-box; }
-
-    /* 팝업 버튼 (가로 정렬 + 동일 폰트) */
-    #pwModal .btn{ background:#00bfae; color:white; padding:8px 14px; border-radius:10px; font-weight:600; font-size:1rem; border:none; cursor:pointer }
-    #pwModal .cancel{ background:#eee; color:#666; }
-    #pwModal .btn-row{ display:flex; gap:10px; justify-content:center; align-items:center; margin-top:10px; }
   </style>
 </head>
 <body>
@@ -211,17 +235,17 @@ index_html = r'''
 
       <!-- 비번 팝업 -->
       <div id="pwModal">
-        <div class="modal-inner">
+        <div class="modal-inner" style="background:white; padding:24px 28px 18px 28px; border-radius:18px; min-width:320px; box-shadow:0 4px 30px #0001; text-align:center; position:relative">
           <div style="font-size:1.05rem;font-weight:700;margin-bottom:10px;color:#00695c;">관리자 비밀번호</div>
           <form id="pwForm" method="post" action="/dodo-manager">
-            <input type="password" name="password" placeholder="비밀번호" required>
+            <input type="password" name="password" placeholder="비밀번호" required style="padding:10px 14px; border:1.2px solid #b2dfdb; border-radius:10px; width:80%; box-sizing:border-box;">
             <input type="hidden" name="action" value="login">
-            <div class="btn-row">
-              <button type="submit" class="btn">확인</button>
-              <button type="button" class="btn cancel" onclick="hidePwModal()">취소</button>
+            <div class="btn-row" style="display:flex; gap:10px; justify-content:center; align-items:center; margin-top:10px;">
+              <button type="submit" class="btn" style="background:#00bfae; color:white; padding:8px 14px; border-radius:10px; font-weight:600; font-size:1rem; border:none; cursor:pointer">확인</button>
+              <button type="button" class="btn cancel" onclick="hidePwModal()" style="background:#eee; color:#666; padding:8px 14px; border-radius:10px; font-weight:600; font-size:1rem; border:none; cursor:pointer">취소</button>
             </div>
           </form>
-          <span class="close-x" onclick="hidePwModal()">×</span>
+          <span class="close-x" onclick="hidePwModal()" style="position:absolute; top:7px; right:13px; font-size:1.45em; cursor:pointer; color:#ccc;">×</span>
         </div>
       </div>
 
