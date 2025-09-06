@@ -260,15 +260,26 @@ admin_html = r'''
         });
       });
     }
-    function downloadFile(fname){ window.open('/download/'+fname+'?pw={{ admin_pw }}', '_blank'); }
-    function deleteFile(fname){
-      if(confirm(fname+' 파일을 삭제하시겠습니까?')){
-        fetch('/deletefile/'+fname+'?pw={{ admin_pw }}', {method:'POST'}).then(r=>r.json()).then(function(data){
+  function downloadFile(fname){
+    const url = '/download/' + encodeURIComponent(fname) + '?pw={{ admin_pw }}';
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function deleteFile(fname){
+    if(confirm(fname+' 파일을 삭제하시겠습니까?')){
+      fetch('/deletefile/'+encodeURIComponent(fname)+'?pw={{ admin_pw }}', {method:'POST'})
+        .then(r=>r.json())
+        .then(function(data){
           if(data.success) loadFileList(); else alert(data.msg || '삭제 실패');
         });
-      }
     }
-  </script>
+  }
+</script>
 </body>
 </html>
 '''
