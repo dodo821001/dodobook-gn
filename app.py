@@ -34,11 +34,11 @@ index_html = r'''
   <title>만화카페 도도 도서검색</title>
   <style>
     :root{
-      /* 더 큼직하게 보이도록 상향 */
+      /* 큼직한 레이아웃 값 */
       --gap: clamp(16px, 3vw, 40px);
       --pad: clamp(18px, 3.8vw, 52px);
       --radius: clamp(16px, 3.2vw, 44px);
-      --img-h: clamp(420px, 60vh, 720px);
+      --img-h: clamp(420px, 60vh, 720px); /* 이미지/기본 컨테이너 높이 기준 */
       --h1: clamp(1.9rem, 3vw, 2.8rem);
       --text: clamp(1.06rem, 1.25vw, 1.22rem);
       --btn-fz: clamp(1.05rem, 1.3vw, 1.25rem);
@@ -62,10 +62,14 @@ index_html = r'''
     .container{
       max-width:820px; flex:1 1 760px; min-width:360px;
       padding:var(--pad);
+      /* 검색 전에도 화면이 넉넉하도록 최소 높이 확보 */
+      min-height: var(--img-h);
+      /* 버튼을 더 아래로 내리기 위해 하단 패딩을 약간 추가 */
+      padding-bottom: calc(var(--pad) + 18px);
+
       border-radius:var(--radius); background:white;
       box-shadow:0 10px 56px #b2dfdb80; text-align:center;
       border:2px solid #00bfae20; display:flex; flex-direction:column;
-      min-height:0;
     }
     .imgbox{
       flex:1 1 560px; max-width:720px; min-width:340px;
@@ -99,8 +103,8 @@ index_html = r'''
     button{
       padding:var(--btn-py) var(--btn-px);
       margin:10px; border-radius:18px; background:#00bfae; color:white; border:none;
-      cursor:pointer; font-weight:bold; font-size:var(--btn-fz); transition:0.18s;
-      box-shadow:0 2px 12px #00bfae20;
+      cursor:pointer; font-weight:bold; font-size:var(--btn-fz);
+      transition:0.18s; box-shadow:0 2px 12px #00bfae20;
       align-self:center;
     }
     button:hover{ background:#00acc1; }
@@ -115,15 +119,17 @@ index_html = r'''
     th{ background:#00bfae; color:white; font-weight:700; }
     tr:nth-child(even) td{ background:#f0f5f5; }
 
-    /* 하단 링크 영역 (흰 배경 내부) */
-    .container-footer{ margin-top:auto; padding-top:18px; }
+    /* 하단 링크 영역 (흰 배경 내부, 더 아래 배치) */
+    .container-footer{
+      margin-top:auto;           /* 내용 밀어내고 하단으로 */
+      padding-top:24px;          /* 위 여백 */
+    }
     .linklike{
       background:none; border:none; color:#00bfae; cursor:pointer;
       text-decoration:underline; font-weight:600; font-size:1rem; font-family:inherit;
       padding:0; transition:none;
-      /* 시각 효과 완전 제거 */
-      text-shadow:none; box-shadow:none; outline:none;
-      -webkit-tap-highlight-color: transparent; filter:none; transform:none;
+      text-shadow:none; box-shadow:none; outline:none; -webkit-tap-highlight-color: transparent;
+      filter:none; transform:none;
     }
     .linklike:hover{
       background:none !important; color:#00bfae; text-decoration:underline;
@@ -192,7 +198,7 @@ index_html = r'''
         <div style="color:#666;font-size:2em;margin-top:24px;">아직 준비되지 않은 도서 입니다</div>
       {% endif %}
 
-      <!-- 하단(흰 배경 내부) -->
+      <!-- 하단(흰 배경 내부, 조금 더 아래) -->
       <div class="container-footer">
         <button type="button" class="linklike" onclick="showPwModal();return false;">관리자/도서업데이트</button>
       </div>
@@ -267,7 +273,7 @@ admin_login_html = r'''
 </html>
 '''
 
-# 관리자 화면 (하단 링크 동일 폰트, Blob 다운로드)
+# 관리자 화면 (파일명 유지 다운로드/삭제 UI 동일)
 admin_html = r'''
 <!DOCTYPE html>
 <html lang="ko">
@@ -296,7 +302,6 @@ admin_html = r'''
     #downloadModal .delete-btn{background:#c62828;color:white;font-size:0.97em;}
     #status{margin-top:8px;color:#c62828;font-size:0.95em;}
 
-    /* 통일 텍스트 버튼 */
     .linklike{
       background:none; border:none; color:#00bfae; cursor:pointer;
       text-decoration:underline; font-weight:600; font-size:1rem; font-family:inherit;
@@ -437,7 +442,7 @@ def read_books():
 
     # NaN 처리 및 정수처럼 보이는 값의 소수점 제거
     df = df.fillna('')
-    df = df.applymap(lambda x: '' if (isinstance(x, str) and x.strip().lower() in ('nan', 'none', 'null')) else x)
+    df = df.applymap(lambda x: '' if ( isinstance(x, str) and x.strip().lower() in ('nan','none','null') ) else x)
 
     def clean_int_like(x):
         if x == '' or x is None: return ''
@@ -467,8 +472,7 @@ def current_image_path():
 
 def unique_filename(directory: str, original_name: str) -> str:
     """
-    디렉토리 내에서 원래 파일명을 최대한 유지하되, 중복 시 `_1`, `_2`…를 붙여 충돌을 피함.
-    경로 주입 방지를 위해 basename만 사용.
+    디렉토리 내에서 원래 파일명을 유지하되, 중복 시 `_1`, `_2`…를 붙여 충돌을 피함.
     """
     base_name = os.path.basename(original_name)
     name, ext = os.path.splitext(base_name)
@@ -501,7 +505,7 @@ def index():
 
 @app.route("/dodo-manager", methods=["GET", "POST"])
 def admin():
-    # 로그인 처리 (성공 메시지 플래시는 제거)
+    # 로그인 처리(성공 메시지 없음)
     if request.method == "POST" and request.form.get("action") == "login":
         pw = request.form.get("password", "")
         if pw == ADMIN_PASSWORD:
@@ -524,10 +528,8 @@ def admin():
         file = request.files.get("file")
         if file and allowed_ext(file.filename, ALLOWED_XLSX):
             os.makedirs(BOOKS_DIR, exist_ok=True)
-            # 원래 파일명 유지(중복 시 _1, _2…)
-            final_name = unique_filename(BOOKS_DIR, file.filename)
-            save_path = os.path.join(BOOKS_DIR, final_name)
-            file.save(save_path)
+            final_name = unique_filename(BOOKS_DIR, file.filename)  # 업로드한 파일명 유지
+            file.save(os.path.join(BOOKS_DIR, final_name))
             flash("도서 데이터가 성공적으로 업로드되었습니다!", "success")
         else:
             flash("올바른 엑셀 파일(.xlsx)만 업로드 가능합니다.", "danger")
