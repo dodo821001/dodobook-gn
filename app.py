@@ -33,15 +33,18 @@ index_html = r'''
   <title>만화카페 도도 도서검색</title>
   <style>
     :root{
-      /* (중간 사이즈) 레이아웃 기본값 */
+      /* 레이아웃 기본값 */
       --gap: clamp(14px, 2.6vw, 32px);
       --pad: clamp(16px, 3.2vw, 44px);
       --radius: clamp(16px, 3vw, 40px);
 
-      /* 페이지 상하 여백 */
+      /* 페이지 가로 폭: 80vw (≈ 20% 축소), 상한을 걸고 싶으면 min(80vw, 1400px) */
+      --page-width: min(80vw, 1400px);
+
+      /* 상하 여백 */
       --page-vmargin: clamp(10px, 3.4vh, 28px);
 
-      /* 기본 목표 높이 (≈10% 더 작게) */
+      /* 높이 기준 */
       --img-h: clamp(340px, 47vh, 640px);
 
       --h1: clamp(1.8rem, 2.6vw, 2.5rem);
@@ -60,14 +63,14 @@ index_html = r'''
       margin:0; min-height:100vh;
     }
     .flex-wrap{
-      display:flex; flex-wrap:wrap; justify-content:center; align-items:stretch;
-      max-width:1500px; margin:var(--page-vmargin) auto;
+      display:flex; justify-content:center; align-items:stretch;
+      width: var(--page-width);                  /* ← 80vw 적용 */
+      margin:var(--page-vmargin) auto;
       gap:var(--gap);
     }
 
     /* 높이(검색 전에도 충분히 크게 보이도록): 83vh 기준 */
     .container{
-      max-width:800px; flex:1 1 740px; min-width:360px;
       padding:var(--pad);
       min-height: max(var(--img-h), calc(83vh - (var(--page-vmargin) * 2)));
       padding-bottom: var(--pad); /* 하단 버튼 공간 */
@@ -77,14 +80,15 @@ index_html = r'''
       border:2px solid #00bfae20; display:flex; flex-direction:column;
     }
     .imgbox{
-      flex:1 1 540px; max-width:700px; min-width:340px;
       background:rgba(255,255,255,0.90); border-radius:var(--radius);
       box-shadow:0 10px 56px #b2dfdb30; display:flex; align-items:center; justify-content:center;
       padding:22px 18px; margin:0;
       min-height: max(var(--img-h), calc(83vh - (var(--page-vmargin) * 2)));
     }
     .imgbox img{
-      max-width:100%; max-height:calc(var(--img-h) - 14px);
+      width: 100%;
+      height: auto;
+      max-height:calc(var(--img-h) - 14px);
       border-radius:28px; box-shadow:0 2px 18px #b2dfdb40; object-fit:contain;
     }
     h1{ color:#00695c; font-size:var(--h1); font-weight:bold; margin-bottom:16px; letter-spacing:-1px; }
@@ -127,8 +131,8 @@ index_html = r'''
 
     /* 하단 링크: 흰 배경 내부 거의 바닥 */
     .container-footer{
-      margin-top:auto;     /* 아래로 밀착 */
-      padding-top:16px;    /* 위 콘텐츠와 살짝 간격만 */
+      margin-top:auto;
+      padding-top:16px;
     }
     .linklike{
       background:none; border:none; color:#00bfae; cursor:pointer;
@@ -142,66 +146,52 @@ index_html = r'''
       text-shadow:none; box-shadow:none; filter:none; transform:none;
     }
 
-    @media (max-width: 1280px), (max-height: 820px){
-      .container{ max-width:760px; flex:1 1 700px; }
-      .imgbox{ padding:18px; }
-      th, td{ padding:10px 10px; border-radius:12px; }
-    }
-
-    /* ▶ 모바일 최적화: 세로가 너무 길지 않게 svh 사용 */
+    /* ▶ 모바일 최적화: 세로 스택 + 적당한 평균 높이(svh) */
     @media (max-width: 900px){
       .flex-wrap{
         flex-direction:column; 
         align-items:center; 
         gap: 14px; 
         margin: 8px auto;
-        max-width: 680px;     /* 모바일에서 좌우 여백 확보 */
-        width: 94vw;
+        width: min(94vw, 680px);
       }
-
       .container, .imgbox{ width: 100%; flex: 1 1 auto; }
 
+      /* 보기 좋은 평균적인 높이로 조정 */
       .container{
-        min-height: clamp(360px, 48svh, 560px);
+        min-height: clamp(340px, 46svh, 540px);
         padding: 18px;
-        padding-bottom: 18px; /* 하단 버튼 공간 살짝 유지 */
+        padding-bottom: 18px;
       }
       .imgbox{
         min-height: clamp(220px, 36svh, 420px);
         padding: 14px;
       }
-
       .container-footer{
         margin-top:auto;
         padding-top: 12px;
       }
     }
-
-    /* svh 지원 안 하는 구형 브라우저 폴백 */
+    /* svh 미지원 폴백 */
     @supports not (height: 1svh) {
       @media (max-width: 900px){
-        .container{ min-height: clamp(360px, 48vh, 560px); }
+        .container{ min-height: clamp(340px, 46vh, 540px); }
         .imgbox{ min-height: clamp(220px, 36vh, 420px); }
       }
     }
 
-    /* ===== 여기서부터: 데스크톱에서 좌우 정확히 5:5로 강제 ===== */
+    /* ===== 데스크톱: 좌우 정확히 5:5 ===== */
     @media (min-width: 901px){
       .flex-wrap{
-        flex-direction: row;     /* 가로 배치 */
-        flex-wrap: nowrap;       /* 줄바꿈 방지 */
+        flex-direction: row;     
+        flex-wrap: nowrap;       
       }
       .container,
       .imgbox{
-        flex: 0 0 50%;           /* 50% 고정 점유 */
+        flex: 0 0 50%;   /* 50% 고정 */
         width: 50%;
-        max-width: none;         /* 이전 max-width 제한 해제 */
-        min-width: 0;            /* 내부 넘침 방지 */
-      }
-      .imgbox img{
-        width: 100%;
-        height: auto;
-        object-fit: contain;
+        min-width: 0;
+        max-width: none;
       }
     }
   </style>
@@ -239,7 +229,7 @@ index_html = r'''
         <div style="color:#666;font-size:2em;margin-top:18px;">아직 준비되지 않은 도서 입니다</div>
       {% endif %}
 
-      <!-- 흰 배경 내부 거의 바닥 -->
+      <!-- 흰 배경 내부 바닥 근처 -->
       <div class="container-footer">
         <button type="button" class="linklike" onclick="showPwModal();return false;">관리자/도서업데이트</button>
       </div>
