@@ -41,8 +41,8 @@ index_html = r'''
       /* 페이지 상하 여백 */
       --page-vmargin: clamp(10px, 3.4vh, 28px);
 
-      /* 기본 목표 높이(조금 줄임) */
-      --img-h: clamp(360px, 52vh, 680px);
+      /* 기본 목표 높이 (≈10% 더 작게) */
+      --img-h: clamp(340px, 47vh, 640px);
 
       --h1: clamp(1.8rem, 2.6vw, 2.5rem);
       --text: clamp(1.04rem, 1.15vw, 1.18rem);
@@ -65,11 +65,11 @@ index_html = r'''
       gap:var(--gap);
     }
 
-    /* 컨테이너/이미지 박스가 (검색 전에도) 충분히 크게 보이도록: 92vh 기준 */
+    /* 컨테이너/이미지 박스가 (검색 전에도) 충분히 크게 보이도록: 83vh 기준 (≈10% 축소) */
     .container{
       max-width:800px; flex:1 1 740px; min-width:360px;
       padding:var(--pad);
-      min-height: max(var(--img-h), calc(92vh - (var(--page-vmargin) * 2)));
+      min-height: max(var(--img-h), calc(83vh - (var(--page-vmargin) * 2)));
       /* 버튼을 더 아래(바닥)로: 바닥 패딩 과하지 않게 */
       padding-bottom: var(--pad);
 
@@ -82,7 +82,7 @@ index_html = r'''
       background:rgba(255,255,255,0.90); border-radius:var(--radius);
       box-shadow:0 10px 56px #b2dfdb30; display:flex; align-items:center; justify-content:center;
       padding:22px 18px; margin:0;
-      min-height: max(var(--img-h), calc(92vh - (var(--page-vmargin) * 2)));
+      min-height: max(var(--img-h), calc(83vh - (var(--page-vmargin) * 2)));
     }
     .imgbox img{
       max-width:100%; max-height:calc(var(--img-h) - 14px);
