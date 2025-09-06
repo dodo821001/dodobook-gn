@@ -34,17 +34,19 @@ index_html = r'''
   <title>만화카페 도도 도서검색</title>
   <style>
     :root{
-      --gap: clamp(16px, 3vw, 40px);
-      --pad: clamp(16px, 3vw, 44px);
-      --radius: clamp(14px, 3vw, 44px);
-      --img-h: clamp(220px, 38vh, 460px);
-      --h1: clamp(1.4rem, 2.2vw, 2.2rem);
-      --text: clamp(0.95rem, 1.05vw, 1.06rem);
-      --btn-fz: clamp(0.95rem, 1.2vw, 1.13rem);
-      --btn-py: clamp(10px, 1.2vw, 16px);
-      --btn-px: clamp(18px, 2.1vw, 36px);
-      --input-fz: clamp(1rem, 1.2vw, 1.2rem);
-      --input-pd: clamp(10px, 1.4vw, 16px);
+      /* 화면에 좀 더 크고 꽉 차게 보이도록 상향 */
+      --gap: clamp(18px, 3.5vw, 44px);
+      --pad: clamp(18px, 3.6vw, 48px);
+      --radius: clamp(16px, 3.2vw, 44px);
+      --img-h: clamp(320px, 50vh, 600px); /* 이미지 박스 높이 키움 */
+      --h1: clamp(1.7rem, 2.8vw, 2.6rem); /* 제목 폰트 크게 */
+      --text: clamp(1.02rem, 1.15vw, 1.18rem);
+      --btn-fz: clamp(1rem, 1.25vw, 1.2rem);
+      --btn-py: clamp(12px, 1.4vw, 18px);
+      --btn-px: clamp(22px, 2.4vw, 40px);
+      --input-fz: clamp(1.05rem, 1.25vw, 1.25rem);
+      --input-pd: clamp(12px, 1.5vw, 18px);
+      --max-input: 640px; /* 검색 입력칸 최대 너비 */
     }
 
     body{
@@ -54,18 +56,19 @@ index_html = r'''
     }
     .flex-wrap{
       display:flex; flex-wrap:wrap; justify-content:center; align-items:stretch;
-      max-width:1400px; margin:clamp(12px,4vh,36px) auto;
+      max-width:1440px; margin:clamp(16px,4.5vh,40px) auto;
       gap:var(--gap);
     }
     .container{
-      max-width:620px; flex:1 1 560px; min-width:320px;
+      max-width:740px;          /* 카드 자체도 조금 더 크게 */
+      flex:1 1 660px; min-width:340px;
       padding:var(--pad);
       border-radius:var(--radius); background:white;
       box-shadow:0 10px 56px #b2dfdb80; text-align:center;
       border:2px solid #00bfae20; display:flex; flex-direction:column;
     }
     .imgbox{
-      flex:1 1 480px; max-width:580px; min-width:300px;
+      flex:1 1 520px; max-width:640px; min-width:320px;
       background:rgba(255,255,255,0.90); border-radius:var(--radius);
       box-shadow:0 10px 56px #b2dfdb30; display:flex; align-items:center; justify-content:center;
       padding:24px 20px; margin:0; min-height:var(--img-h);
@@ -75,39 +78,51 @@ index_html = r'''
       border-radius:32px; box-shadow:0 2px 18px #b2dfdb40; object-fit:contain;
     }
     h1{ color:#00695c; font-size:var(--h1); font-weight:bold; margin-bottom:18px; letter-spacing:-1px; }
-    form{ margin-bottom:10px;}
+
+    /* 폼을 중앙 정렬 */
+    form{
+      margin-bottom:10px;
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+    }
+    /* 입력칸을 정확히 화면/컨테이너의 중앙에 */
     input[type="text"]{
-      width:100%;
+      display:block;
+      width:min(var(--max-input), 96%);  /* 너무 넓지 않도록 최대 너비 적용 */
+      max-width:var(--max-input);
+      margin:0 auto;                     /* 수평 중앙 정렬 */
       font-size:var(--input-fz);
       padding:var(--input-pd);
       border-radius:16px;
       border:1.8px solid #b2dfdb;
+      box-sizing:border-box;             /* 패딩/보더 포함해 정확히 가운데 */
+      text-align:left;
     }
     button{
       padding:var(--btn-py) var(--btn-px);
       margin:10px; border-radius:18px; background:#00bfae; color:white; border:none;
       cursor:pointer; font-weight:bold; font-size:var(--btn-fz); transition:0.18s;
       box-shadow:0 2px 12px #00bfae20;
+      align-self:center;
     }
     button:hover{ background:#00acc1; }
-    .result-box{ margin-top:22px;}
+    .result-box{ margin-top:26px;}
     table{
-      width:100%; border-collapse:separate; border-spacing:0 8px;
+      width:100%; border-collapse:separate; border-spacing:0 10px;
       font-size:var(--text);
     }
     th, td{
-      border:1.8px solid #b2dfdb; padding:12px 10px; border-radius:14px; background:white;
+      border:1.8px solid #b2dfdb; padding:12px 12px; border-radius:14px; background:white;
     }
     th{ background:#00bfae; color:white; font-weight:700; }
     tr:nth-child(even) td{ background:#f0f5f5; }
-    .admin-btns{ margin-top: clamp(48px, 10vh, 160px); }
+    .admin-btns{ margin-top: clamp(36px, 8vh, 120px); }
 
-    @media (max-width: 1280px), (max-height: 800px){
-      .flex-wrap{ gap: clamp(12px,2vw,24px); margin: clamp(8px,2vh,20px) auto; }
-      .container{ max-width:580px; flex:1 1 520px; }
-      .imgbox{ min-height: clamp(200px, 34vh, 380px); padding:18px; }
-      .admin-btns{ margin-top: clamp(28px, 8vh, 100px); }
-      th, td{ padding:10px 8px; border-radius:12px; }
+    @media (max-width: 1280px), (max-height: 820px){
+      .flex-wrap{ gap: clamp(14px,2.4vw,26px); margin: clamp(10px,2.6vh,22px) auto; }
+      .container{ max-width:700px; flex:1 1 620px; }
+      .imgbox{ min-height: clamp(280px, 44vh, 520px); padding:18px; }
+      .admin-btns{ margin-top: clamp(28px, 7vh, 90px); }
+      th, td{ padding:10px 10px; border-radius:12px; }
     }
 
     @media (max-width: 900px){
@@ -124,7 +139,7 @@ index_html = r'''
       box-shadow:0 4px 30px #0001; text-align:center; position:relative
     }
     #pwModal .close-x{ position:absolute; top:7px; right:13px; font-size:1.45em; cursor:pointer; color:#ccc; }
-    #pwModal input{ padding:10px 14px; border:1.2px solid #b2dfdb; border-radius:10px; width:80%; }
+    #pwModal input{ padding:10px 14px; border:1.2px solid #b2dfdb; border-radius:10px; width:80%; box-sizing:border-box; }
     #pwModal .btn{ background:#00bfae; color:white; padding:9px 18px; border-radius:10px; font-weight:bold; border:none; margin-top:12px; cursor:pointer }
     #pwModal .cancel{ background:#eee; color:#888; margin-left:8px; }
   </style>
@@ -523,7 +538,7 @@ def admin():
 
     # 2) GET 직접 접근 시엔 로그인 폼 표시
     if request.method == "GET":
-        return render_template_string(admin_login_html)
+      return render_template_string(admin_login_html)
 
     # 3) 관리자 화면 내 액션 처리 (비번 동봉)
     action = request.form.get("action")
