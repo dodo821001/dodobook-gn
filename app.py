@@ -33,25 +33,25 @@ index_html = r'''
   <title>만화카페 도도 도서검색</title>
   <style>
     :root{
-      /* 레이아웃 기본값 */
-      --gap: clamp(16px, 3vw, 40px);
-      --pad: clamp(18px, 3.8vw, 52px);
-      --radius: clamp(16px, 3.2vw, 44px);
+      /* (중간 사이즈) 레이아웃 기본값 */
+      --gap: clamp(14px, 2.6vw, 32px);
+      --pad: clamp(16px, 3.2vw, 44px);
+      --radius: clamp(16px, 3vw, 40px);
 
-      /* 페이지 상하 여백(컨테이너 높이 계산에 사용) */
-      --page-vmargin: clamp(12px, 4vh, 32px);
+      /* 페이지 상하 여백 */
+      --page-vmargin: clamp(10px, 3.4vh, 28px);
 
-      /* 기본 목표 높이(이미지/컨테이너의 바닥선 기준) */
-      --img-h: clamp(420px, 60vh, 720px);
+      /* 기본 목표 높이(조금 줄임) */
+      --img-h: clamp(360px, 52vh, 680px);
 
-      --h1: clamp(1.9rem, 3vw, 2.8rem);
-      --text: clamp(1.06rem, 1.25vw, 1.22rem);
-      --btn-fz: clamp(1.05rem, 1.3vw, 1.25rem);
-      --btn-py: clamp(12px, 1.5vw, 18px);
-      --btn-px: clamp(22px, 2.6vw, 44px);
-      --input-fz: clamp(1.1rem, 1.35vw, 1.3rem);
-      --input-pd: clamp(12px, 1.6vw, 18px);
-      --max-input: 720px;
+      --h1: clamp(1.8rem, 2.6vw, 2.5rem);
+      --text: clamp(1.04rem, 1.15vw, 1.18rem);
+      --btn-fz: clamp(1.02rem, 1.15vw, 1.2rem);
+      --btn-py: clamp(10px, 1.3vw, 16px);
+      --btn-px: clamp(20px, 2.2vw, 38px);
+      --input-fz: clamp(1.05rem, 1.2vw, 1.22rem);
+      --input-pd: clamp(10px, 1.4vw, 16px);
+      --max-input: 680px;
     }
 
     body{
@@ -61,38 +61,39 @@ index_html = r'''
     }
     .flex-wrap{
       display:flex; flex-wrap:wrap; justify-content:center; align-items:stretch;
-      max-width:1560px; margin:var(--page-vmargin) auto;
+      max-width:1500px; margin:var(--page-vmargin) auto;
       gap:var(--gap);
     }
 
-    /* 컨테이너/이미지 박스가 최소한 '뷰포트 높이'만큼 차지하도록 */
+    /* 컨테이너/이미지 박스가 (검색 전에도) 충분히 크게 보이도록: 92vh 기준 */
     .container{
-      max-width:820px; flex:1 1 760px; min-width:360px;
+      max-width:800px; flex:1 1 740px; min-width:360px;
       padding:var(--pad);
-      /* 최초 화면도 검색 후처럼 크게: 100vh - 상하 여백 * 2, 그리고 img-h 중 큰 값 사용 */
-      min-height: max(var(--img-h), calc(100vh - (var(--page-vmargin) * 2)));
-      padding-bottom: calc(var(--pad) + 24px); /* 버튼을 더 아래로 */
+      min-height: max(var(--img-h), calc(92vh - (var(--page-vmargin) * 2)));
+      /* 버튼을 더 아래(바닥)로: 바닥 패딩 과하지 않게 */
+      padding-bottom: var(--pad);
+
       border-radius:var(--radius); background:white;
       box-shadow:0 10px 56px #b2dfdb80; text-align:center;
       border:2px solid #00bfae20; display:flex; flex-direction:column;
     }
     .imgbox{
-      flex:1 1 560px; max-width:720px; min-width:340px;
+      flex:1 1 540px; max-width:700px; min-width:340px;
       background:rgba(255,255,255,0.90); border-radius:var(--radius);
       box-shadow:0 10px 56px #b2dfdb30; display:flex; align-items:center; justify-content:center;
-      padding:24px 20px; margin:0;
-      min-height: max(var(--img-h), calc(100vh - (var(--page-vmargin) * 2)));
+      padding:22px 18px; margin:0;
+      min-height: max(var(--img-h), calc(92vh - (var(--page-vmargin) * 2)));
     }
     .imgbox img{
-      max-width:100%; max-height:calc(var(--img-h) - 16px);
-      border-radius:32px; box-shadow:0 2px 18px #b2dfdb40; object-fit:contain;
+      max-width:100%; max-height:calc(var(--img-h) - 14px);
+      border-radius:28px; box-shadow:0 2px 18px #b2dfdb40; object-fit:contain;
     }
-    h1{ color:#00695c; font-size:var(--h1); font-weight:bold; margin-bottom:18px; letter-spacing:-1px; }
+    h1{ color:#00695c; font-size:var(--h1); font-weight:bold; margin-bottom:16px; letter-spacing:-1px; }
 
     /* 폼/입력 중앙 정렬 */
     form{
-      margin-bottom:12px;
-      display:flex; flex-direction:column; align-items:center; gap:12px;
+      margin-bottom:10px;
+      display:flex; flex-direction:column; align-items:center; gap:10px;
     }
     input[type="text"]{
       display:block;
@@ -114,21 +115,21 @@ index_html = r'''
       align-self:center;
     }
     button:hover{ background:#00acc1; }
-    .result-box{ margin-top:26px;}
+    .result-box{ margin-top:22px;}
     table{
-      width:100%; border-collapse:separate; border-spacing:0 12px;
+      width:100%; border-collapse:separate; border-spacing:0 10px;
       font-size:var(--text);
     }
     th, td{
-      border:1.8px solid #b2dfdb; padding:14px 12px; border-radius:14px; background:white;
+      border:1.8px solid #b2dfdb; padding:12px 12px; border-radius:14px; background:white;
     }
     th{ background:#00bfae; color:white; font-weight:700; }
     tr:nth-child(even) td{ background:#f0f5f5; }
 
-    /* 하단 링크: 흰 배경 내부 맨 아래에 고정되도록 */
+    /* 하단 링크: 흰 배경 내부 거의 바닥 */
     .container-footer{
-      margin-top:auto;           /* 내용을 밀어내 아래로 */
-      padding-top:28px;          /* 살짝 더 내려가게 */
+      margin-top:auto;     /* 아래로 밀착 */
+      padding-top:16px;    /* 위 콘텐츠와 살짝 간격만 */
     }
     .linklike{
       background:none; border:none; color:#00bfae; cursor:pointer;
@@ -143,9 +144,9 @@ index_html = r'''
     }
 
     @media (max-width: 1280px), (max-height: 820px){
-      .container{ max-width:780px; flex:1 1 720px; }
+      .container{ max-width:760px; flex:1 1 700px; }
       .imgbox{ padding:18px; }
-      th, td{ padding:12px 10px; border-radius:12px; }
+      th, td{ padding:10px 10px; border-radius:12px; }
     }
     @media (max-width: 900px){
       .flex-wrap{ flex-direction:column; align-items:center; }
@@ -200,10 +201,10 @@ index_html = r'''
       </div>
       {% endif %}
       {% if no_result %}
-        <div style="color:#666;font-size:2em;margin-top:24px;">아직 준비되지 않은 도서 입니다</div>
+        <div style="color:#666;font-size:2em;margin-top:18px;">아직 준비되지 않은 도서 입니다</div>
       {% endif %}
 
-      <!-- 흰 배경 내부 최하단 -->
+      <!-- 흰 배경 내부 거의 바닥 -->
       <div class="container-footer">
         <button type="button" class="linklike" onclick="showPwModal();return false;">관리자/도서업데이트</button>
       </div>
@@ -238,7 +239,7 @@ index_html = r'''
       {% if img_exists %}
         <img src="/uploaded_img" alt="첨부 이미지">
       {% else %}
-        <div style="color:#aaa;font-size:1.14em;">(아직 첨부된 이미지가 없습니다)</div>
+        <div style="color:#aaa;font-size:1.1em;">(아직 첨부된 이미지가 없습니다)</div>
       {% endif %}
     </div>
   </div>
@@ -246,7 +247,7 @@ index_html = r'''
 </html>
 '''
 
-# 관리자 로그인/페이지(이전 버전과 동일)
+# 관리자 로그인
 admin_login_html = r'''
 <!DOCTYPE html>
 <html lang="ko">
@@ -278,6 +279,7 @@ admin_login_html = r'''
 </html>
 '''
 
+# 관리자 페이지
 admin_html = r'''
 <!DOCTYPE html>
 <html lang="ko">
