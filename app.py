@@ -33,29 +33,100 @@ index_html = r'''
   <meta charset="UTF-8">
   <title>만화카페 도도 도서검색</title>
   <style>
-    body{background:linear-gradient(135deg,#e0f7fa 60%,#f8bbd0 100%);font-family:'Noto Sans KR',sans-serif;margin:0;min-height:100vh;}
-    .flex-wrap{display:flex;flex-wrap:wrap;justify-content:center;align-items:stretch;max-width:1450px;margin:48px auto;gap:40px;}
-    .container{max-width:640px;flex:1 1 600px;min-width:400px;margin:0;padding:44px;border-radius:44px;background:white;box-shadow:0 10px 56px #b2dfdb80;text-align:center;border:2px solid #00bfae20;display:flex;flex-direction:column;}
-    .imgbox{flex:1 1 490px;max-width:590px;min-width:320px;background:rgba(255,255,255,.90);border-radius:44px;box-shadow:0 10px 56px #b2dfdb30;display:flex;align-items:center;justify-content:center;padding:28px 24px;min-height:480px;}
-    .imgbox img{max-width:100%;max-height:470px;border-radius:32px;box-shadow:0 2px 18px #b2dfdb40;object-fit:contain;}
-    h1{color:#00695c;font-size:2.2em;font-weight:bold;margin-bottom:28px;letter-spacing:-1px;}
-    form{margin-bottom:12px;}
-    input[type="text"]{width:84%;font-size:1.2em;padding:16px;border-radius:18px;border:1.8px solid #b2dfdb;}
-    button{padding:16px 36px;margin:12px;border-radius:20px;background:#00bfae;color:white;border:none;cursor:pointer;font-weight:bold;font-size:1.13em;transition:0.18s;box-shadow:0 2px 12px #00bfae20;}
-    button:hover{background:#00acc1;}
-    .result-box{margin-top:36px;}
-    table{width:100%;border-collapse:separate;border-spacing:0 10px;font-size:1.06em;}
-    th,td{border:1.8px solid #b2dfdb;padding:14px 10px;border-radius:15px;background:white;}
-    th{background:#00bfae;color:white;font-weight:700;}
-    tr:nth-child(even) td{background:#f0f5f5;}
-    .admin-btns{margin-top:250px;}
-    @media (max-width:1280px){.flex-wrap{flex-direction:column;align-items:center}.imgbox,.container{max-width:98vw}}
-    #pwModal{display:none;position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,.21);z-index:9999;justify-content:center;align-items:center;}
-    #pwModal .modal-inner{background:white;padding:24px 28px 18px 28px;border-radius:18px;min-width:320px;box-shadow:0 4px 30px #0001;text-align:center;position:relative}
-    #pwModal .close-x{position:absolute;top:7px;right:13px;font-size:1.45em;cursor:pointer;color:#ccc;}
-    #pwModal input{padding:10px 14px;border:1.2px solid #b2dfdb;border-radius:10px;width:80%;}
-    #pwModal .btn{background:#00bfae;color:white;padding:9px 18px;border-radius:10px;font-weight:bold;border:none;margin-top:12px;cursor:pointer}
-    #pwModal .cancel{background:#eee;color:#888;margin-left:8px;}
+    :root{
+      --gap: clamp(16px, 3vw, 40px);
+      --pad: clamp(16px, 3vw, 44px);
+      --radius: clamp(14px, 3vw, 44px);
+      --img-h: clamp(220px, 38vh, 460px);
+      --h1: clamp(1.4rem, 2.2vw, 2.2rem);
+      --text: clamp(0.95rem, 1.05vw, 1.06rem);
+      --btn-fz: clamp(0.95rem, 1.2vw, 1.13rem);
+      --btn-py: clamp(10px, 1.2vw, 16px);
+      --btn-px: clamp(18px, 2.1vw, 36px);
+      --input-fz: clamp(1rem, 1.2vw, 1.2rem);
+      --input-pd: clamp(10px, 1.4vw, 16px);
+    }
+
+    body{
+      background:linear-gradient(135deg,#e0f7fa 60%,#f8bbd0 100%);
+      font-family:'Noto Sans KR',sans-serif;
+      margin:0; min-height:100vh;
+    }
+    .flex-wrap{
+      display:flex; flex-wrap:wrap; justify-content:center; align-items:stretch;
+      max-width:1400px; margin:clamp(12px,4vh,36px) auto;
+      gap:var(--gap);
+    }
+    .container{
+      max-width:620px; flex:1 1 560px; min-width:320px;
+      padding:var(--pad);
+      border-radius:var(--radius); background:white;
+      box-shadow:0 10px 56px #b2dfdb80; text-align:center;
+      border:2px solid #00bfae20; display:flex; flex-direction:column;
+    }
+    .imgbox{
+      flex:1 1 480px; max-width:580px; min-width:300px;
+      background:rgba(255,255,255,0.90); border-radius:var(--radius);
+      box-shadow:0 10px 56px #b2dfdb30; display:flex; align-items:center; justify-content:center;
+      padding:24px 20px; margin:0; min-height:var(--img-h);
+    }
+    .imgbox img{
+      max-width:100%; max-height:calc(var(--img-h) - 16px);
+      border-radius:32px; box-shadow:0 2px 18px #b2dfdb40; object-fit:contain;
+    }
+    h1{ color:#00695c; font-size:var(--h1); font-weight:bold; margin-bottom:18px; letter-spacing:-1px; }
+    form{ margin-bottom:10px;}
+    input[type="text"]{
+      width:100%;
+      font-size:var(--input-fz);
+      padding:var(--input-pd);
+      border-radius:16px;
+      border:1.8px solid #b2dfdb;
+    }
+    button{
+      padding:var(--btn-py) var(--btn-px);
+      margin:10px; border-radius:18px; background:#00bfae; color:white; border:none;
+      cursor:pointer; font-weight:bold; font-size:var(--btn-fz); transition:0.18s;
+      box-shadow:0 2px 12px #00bfae20;
+    }
+    button:hover{ background:#00acc1; }
+    .result-box{ margin-top:22px;}
+    table{
+      width:100%; border-collapse:separate; border-spacing:0 8px;
+      font-size:var(--text);
+    }
+    th, td{
+      border:1.8px solid #b2dfdb; padding:12px 10px; border-radius:14px; background:white;
+    }
+    th{ background:#00bfae; color:white; font-weight:700; }
+    tr:nth-child(even) td{ background:#f0f5f5; }
+    .admin-btns{ margin-top: clamp(48px, 10vh, 160px); }
+
+    @media (max-width: 1280px), (max-height: 800px){
+      .flex-wrap{ gap: clamp(12px,2vw,24px); margin: clamp(8px,2vh,20px) auto; }
+      .container{ max-width:580px; flex:1 1 520px; }
+      .imgbox{ min-height: clamp(200px, 34vh, 380px); padding:18px; }
+      .admin-btns{ margin-top: clamp(28px, 8vh, 100px); }
+      th, td{ padding:10px 8px; border-radius:12px; }
+    }
+
+    @media (max-width: 900px){
+      .flex-wrap{ flex-direction:column; align-items:center; }
+      .container, .imgbox{ max-width:96vw; }
+    }
+
+    #pwModal{
+      display:none; position:fixed; left:0; top:0; width:100vw; height:100vh;
+      background:rgba(0,0,0,0.21); z-index:9999; justify-content:center; align-items:center;
+    }
+    #pwModal .modal-inner{
+      background:white; padding:24px 28px 18px 28px; border-radius:18px; min-width:320px;
+      box-shadow:0 4px 30px #0001; text-align:center; position:relative
+    }
+    #pwModal .close-x{ position:absolute; top:7px; right:13px; font-size:1.45em; cursor:pointer; color:#ccc; }
+    #pwModal input{ padding:10px 14px; border:1.2px solid #b2dfdb; border-radius:10px; width:80%; }
+    #pwModal .btn{ background:#00bfae; color:white; padding:9px 18px; border-radius:10px; font-weight:bold; border:none; margin-top:12px; cursor:pointer }
+    #pwModal .cancel{ background:#eee; color:#888; margin-left:8px; }
   </style>
 </head>
 <body>
@@ -164,7 +235,7 @@ admin_login_html = r'''
 </html>
 '''
 
-# 관리자 화면 (상단 링크 제거, 하단에만 '검색 화면으로' 유지)
+# 관리자 화면 (하단 두 컨트롤 통일 스타일, Blob 다운로드)
 admin_html = r'''
 <!DOCTYPE html>
 <html lang="ko">
@@ -192,6 +263,23 @@ admin_html = r'''
     #downloadModal .download-btn{background:#00796b;font-size:0.97em;}
     #downloadModal .delete-btn{background:#c62828;color:white;font-size:0.97em;}
     #status{margin-top:8px;color:#c62828;font-size:0.95em;}
+
+    /* 통일 텍스트 버튼 스타일 */
+    .linklike{
+      background:none;
+      border:none;
+      color:#00bfae;
+      cursor:pointer;
+      text-decoration:underline;
+      font-weight:600;
+      font-size:1rem;
+      font-family:inherit;
+      padding:0;
+    }
+    .linklike:hover{
+      color:#00acc1;
+      text-decoration:none;
+    }
   </style>
 </head>
 <body>
@@ -222,10 +310,10 @@ admin_html = r'''
     </form>
 
     <div style="margin-top:22px;">
-      <button id="openDownload" type="button" style="background:none;border:none;color:#00bfae;cursor:pointer;text-decoration:underline;">
+      <button id="openDownload" type="button" class="linklike">
         기존 도서 데이터 다운로드/삭제
       </button>
-      <a href="/">검색 화면으로</a>
+      <a href="/" class="linklike">검색 화면으로</a>
       <div id="status"></div>
     </div>
 
@@ -240,7 +328,7 @@ admin_html = r'''
   </div>
 
   <script>
-    // 버튼 클릭 시 모달 열기 (기본 앵커 동작 없음)
+    // 버튼 클릭 시 모달 열기
     document.addEventListener('DOMContentLoaded', function () {
       var btn = document.getElementById('openDownload');
       if (btn) {
@@ -302,7 +390,7 @@ admin_html = r'''
         });
     }
 
-    // Blob 다운로드 방식 (팝업 차단 무관)
+    // Blob 다운로드 방식
     function downloadFile(fname){
       setStatus('');
       const url = '/download/' + encodeURIComponent(fname) + '?pw={{ admin_pw }}';
@@ -313,7 +401,7 @@ admin_html = r'''
             const a = document.createElement('a');
             const objectUrl = URL.createObjectURL(blob);
             a.href = objectUrl;
-            a.download = fname; // 저장 파일명
+            a.download = fname;
             document.body.appendChild(a);
             a.click();
             URL.revokeObjectURL(objectUrl);
