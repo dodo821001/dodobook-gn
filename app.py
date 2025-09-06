@@ -38,7 +38,7 @@ index_html = r'''
       --pad: clamp(16px, 3.2vw, 44px);
       --radius: clamp(16px, 3vw, 40px);
 
-      /* 페이지 가로 폭: 80vw (≈ 20% 축소), 상한을 걸고 싶으면 min(80vw, 1400px) */
+      /* 데스크톱 페이지 가로 폭: 80vw (≈ 20% 축소), 상한을 걸고 싶으면 min(80vw, 1400px) */
       --page-width: min(80vw, 1400px);
 
       /* 상하 여백 */
@@ -64,7 +64,7 @@ index_html = r'''
     }
     .flex-wrap{
       display:flex; justify-content:center; align-items:stretch;
-      width: var(--page-width);                  /* ← 80vw 적용 */
+      width: var(--page-width);                  /* 데스크톱 기본: 80vw */
       margin:var(--page-vmargin) auto;
       gap:var(--gap);
     }
@@ -146,41 +146,7 @@ index_html = r'''
       text-shadow:none; box-shadow:none; filter:none; transform:none;
     }
 
-    /* ▶ 모바일 최적화: 세로 스택 + 적당한 평균 높이(svh) */
-    @media (max-width: 900px){
-      .flex-wrap{
-        flex-direction:column; 
-        align-items:center; 
-        gap: 14px; 
-        margin: 8px auto;
-        width: min(94vw, 680px);
-      }
-      .container, .imgbox{ width: 100%; flex: 1 1 auto; }
-
-      /* 보기 좋은 평균적인 높이로 조정 */
-      .container{
-        min-height: clamp(340px, 46svh, 540px);
-        padding: 18px;
-        padding-bottom: 18px;
-      }
-      .imgbox{
-        min-height: clamp(220px, 36svh, 420px);
-        padding: 14px;
-      }
-      .container-footer{
-        margin-top:auto;
-        padding-top: 12px;
-      }
-    }
-    /* svh 미지원 폴백 */
-    @supports not (height: 1svh) {
-      @media (max-width: 900px){
-        .container{ min-height: clamp(340px, 46vh, 540px); }
-        .imgbox{ min-height: clamp(220px, 36vh, 420px); }
-      }
-    }
-
-    /* ===== 데스크톱: 좌우 정확히 5:5 ===== */
+    /* ===== 데스크톱: 좌우 정확히 5:5 (그대로 유지) ===== */
     @media (min-width: 901px){
       .flex-wrap{
         flex-direction: row;     
@@ -192,6 +158,66 @@ index_html = r'''
         width: 50%;
         min-width: 0;
         max-width: none;
+      }
+    }
+
+    /* ===== 모바일 & 포트레이트(세로)에서: 위/아래 스택 + 보기 좋은 높이 ===== */
+    /* 1) 전형적 모바일 너비 */
+    @media (max-width: 900px){
+      .flex-wrap{
+        flex-direction:column; 
+        align-items:center; 
+        gap: 14px; 
+        margin: 8px auto;
+        width: min(94vw, 680px);   /* 모바일은 약간 더 좁게 */
+      }
+      .container, .imgbox{ width: 100%; flex: 1 1 auto; }
+
+      /* 보기 좋은 평균 높이: 합쳐도 1 스크린 남짓 */
+      .container{
+        min-height: clamp(360px, 52svh, 620px);
+        padding: 18px;
+        padding-bottom: 18px;
+      }
+      .imgbox{
+        min-height: clamp(220px, 40svh, 520px);
+        padding: 14px;
+      }
+      .container-footer{
+        margin-top:auto;
+        padding-top: 12px;
+      }
+    }
+    /* 2) 태블릿 등 가로폭은 넓어도 '세로로 들었을 때' */
+    @media (orientation: portrait) and (max-width: 1200px){
+      .flex-wrap{
+        flex-direction:column; 
+        align-items:center; 
+        gap: 14px; 
+        margin: 8px auto;
+        width: min(94vw, 900px);   /* 태블릿 세로는 살짝 더 넓게 */
+      }
+      .container, .imgbox{ width: 100%; flex: 1 1 auto; }
+      .container{
+        min-height: clamp(380px, 52svh, 640px);
+        padding: 18px;
+        padding-bottom: 18px;
+      }
+      .imgbox{
+        min-height: clamp(240px, 40svh, 560px);
+        padding: 14px;
+      }
+    }
+
+    /* svh 미지원 폴백 (모바일 & 포트레이트) */
+    @supports not (height: 1svh) {
+      @media (max-width: 900px){
+        .container{ min-height: clamp(360px, 52vh, 620px); }
+        .imgbox{ min-height: clamp(220px, 40vh, 520px); }
+      }
+      @media (orientation: portrait) and (max-width: 1200px){
+        .container{ min-height: clamp(380px, 52vh, 640px); }
+        .imgbox{ min-height: clamp(240px, 40vh, 560px); }
       }
     }
   </style>
@@ -415,7 +441,7 @@ admin_html = r'''
           data.files.forEach(function(file){
             var li=document.createElement('li');
             var nameSpan=document.createElement('span'); nameSpan.className='filename'; nameSpan.textContent=file;
-            var dBtn=document.createElement('button'); dBtn.className='download-btn'; dBtn.textContent='다운로드'; dBtn.addEventListener('click', function(){ downloadFile(file); });
+            var dBtn=document.createElement('button'); dBtn.className='download-btn'; dBtn.textContent='डाउन로드'; dBtn.addEventListener('click', function(){ downloadFile(file); });
             var delBtn=document.createElement('button'); delBtn.className='delete-btn'; delBtn.textContent='삭제'; delBtn.addEventListener('click', function(){ deleteFile(file); });
             li.appendChild(nameSpan); li.appendChild(dBtn); li.appendChild(delBtn); ul.appendChild(li);
           });
@@ -494,9 +520,9 @@ def allowed_ext(filename, allow_set):
 
 def current_image_path():
     for ext in [".jpg", ".jpeg", ".png"]:
-        p = os.path.join(BOOKS_DIR, IMAGE_BASENAME + ext)
-        if os.path.exists(p):
-            return p
+      p = os.path.join(BOOKS_DIR, IMAGE_BASENAME + ext)
+      if os.path.exists(p):
+          return p
     return None
 
 def unique_filename(directory: str, original_name: str) -> str:
