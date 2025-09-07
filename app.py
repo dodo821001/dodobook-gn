@@ -85,12 +85,13 @@ index_html = r'''
       padding:22px 18px; margin:0;
       min-height: max(var(--img-h), calc(83vh - (var(--page-vmargin) * 2)));
     }
-    .imgbox img{
-      width: 100%;
-      height: auto;
-      max-height:calc(var(--img-h) - 14px);
-      border-radius:28px; box-shadow:0 2px 18px #b2dfdb40; object-fit:contain;
-    }
+.imgbox img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 비율 유지하며 꽉 채움, 일부 잘릴 수 있음 */
+    border-radius: 32px;
+    box-shadow: 0 2px 18px #b2dfdb40;
+}
     h1{ color:#00695c; font-size:var(--h1); font-weight:bold; margin-bottom:16px; letter-spacing:-1px; }
 
     /* 폼/입력 중앙 정렬 */
