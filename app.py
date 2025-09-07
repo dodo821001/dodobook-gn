@@ -86,8 +86,8 @@ index_html = r'''
       min-height: max(var(--img-h), calc(83vh - (var(--page-vmargin) * 2)));
     }
 .imgbox img {
-    width: 100%;
-    height: 100%;
+    width: 90%;
+    height: 90%;
     object-fit: cover; /* 비율 유지하며 꽉 채움, 일부 잘릴 수 있음 */
     border-radius: 32px;
     box-shadow: 0 2px 18px #b2dfdb40;
