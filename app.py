@@ -498,8 +498,7 @@ def read_books():
         raise ValueError(f"엑셀에 {missing} 컬럼이 없습니다!")
 
     df = df.fillna('')
-    df = df.applymap(lambda x: '' if (isinstance(x, str) and x.strip().lower() in ('nan','none','null')) else x)
-
+    df = df.apply(lambda col: col.map(lambda x: '' if (isinstance(x, str) and x.strip().lower() in ('nan', 'none', 'null', '없음')) else x))
     def clean_int_like(x):
         if x == '' or x is None: return ''
         s = str(x).strip()
